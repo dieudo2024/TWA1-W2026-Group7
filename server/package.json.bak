@@ -1,0 +1,29 @@
+{
+  "name": "airbnb-server",
+  "version": "1.0.0",
+  "description": "Server for Airbnb Listing Explorer and Review Platform",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js",
+    "import:data": "node utils/importData.js",
+    "import:data:append": "set IMPORT_CLEAR=false&& node utils/importData.js",
+    "verify:data": "node -e \"require('dotenv').config(); const m=require('mongoose'); const Listing=require('./models/Listing'); const User=require('./models/User'); const Review=require('./models/Review'); (async()=>{ await m.connect(process.env.MONGO_URI); const [l,u,r]=await Promise.all([Listing.countDocuments(),User.countDocuments(),Review.countDocuments()]); console.log('Listings:',l); console.log('Users:',u); console.log('Reviews:',r); await m.disconnect(); })().catch(async(e)=>{ console.error(e.message); try{await m.disconnect();}catch{} process.exit(1); });\""
+  },
+  "dependencies": {
+<<<<<<< HEAD
+    "bcryptjs": "^3.0.3",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "jsonwebtoken": "^9.0.3",
+    "mongoose": "^7.5.0"
+=======
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "mongoose": "^7.8.9"
+>>>>>>> 7e8f5061b8cc142fc1216278da826f352e384d2d
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  }
+}
