@@ -2,6 +2,9 @@ const mongoose = require('mongoose');
 
 const listingSchema = new mongoose.Schema(
 	{
+		_id: {
+			type: String,
+		},
 		title: {
 			type: String,
 			required: true,
@@ -41,7 +44,7 @@ const listingSchema = new mongoose.Schema(
 			default: [],
 		},
 		host: {
-			type: mongoose.Schema.Types.ObjectId,
+			type: String,
 			ref: 'User',
 			required: true,
 			index: true,
