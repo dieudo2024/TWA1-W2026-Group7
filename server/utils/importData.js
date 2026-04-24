@@ -9,6 +9,55 @@ const User = require('../models/User');
 const Review = require('../models/Review');
 
 const DEFAULT_DATA_FILE = path.join(__dirname, '..', 'data', 'airbnb.listingAndReviews.json');
+const DEFAULT_BATCH_SIZE = 500;
+
+async function insertManyInBatches(Model, docs, label, batchSize = DEFAULT_BATCH_SIZE) {
+  if (!Array.isArray(docs) || docs.length === 0) {
+    return;
+  }
+
+  const totalBatches = Math.ceil(docs.length / batchSize);
+
+  for (let start = 0; start < docs.length; start += batchSize) {
+    const end = Math.min(start + batchSize, docs.length);
+    const batchIndex = Math.floor(start / batchSize) + 1;
+    const batchDocs = docs.slice(start, end);
+
+    await Model.insertMany(batchDocs, {
+      ordered: false,
+      throwOnValidationError: false,
+    });
+
+    console.log(`[import] ${label}: batch ${batchIndex}/${totalBatches} (${end}/${docs.length})`);
+  }
+}
+
+async function bulkUpsertUsersInBatches(users, batchSize = DEFAULT_BATCH_SIZE) {
+  if (!Array.isArray(users) || users.length === 0) {
+    return;
+  }
+
+  const totalBatches = Math.ceil(users.length / batchSize);
+
+  for (let start = 0; start < users.length; start += batchSize) {
+    const end = Math.min(start + batchSize, users.length);
+    const batchIndex = Math.floor(start / batchSize) + 1;
+    const batchUsers = users.slice(start, end);
+
+    await User.bulkWrite(
+      batchUsers.map((user) => ({
+        updateOne: {
+          filter: { email: user.email },
+          update: { $set: user },
+          upsert: true,
+        },
+      })),
+      { ordered: false },
+    );
+
+    console.log(`[import] users: batch ${batchIndex}/${totalBatches} (${end}/${users.length})`);
+  }
+}
 
 function toNumber(value, fallback = 0) {
   if (value == null) {
@@ -63,17 +112,27 @@ function buildListingDocs(listings) {
     const imageUrl = listing.images && listing.images.picture_url ? String(listing.images.picture_url) : '';
     const hostId = listing.host && listing.host.host_id ? String(listing.host.host_id) : String(listing._id);
 
+    const rawTitle = listing.name ? String(listing.name).trim() : '';
+    const fallbackTitle = `Listing ${String(listing._id || '').slice(0, 12) || 'Untitled'}`;
+    const title = rawTitle.length >= 5 ? rawTitle : fallbackTitle;
+
+    const rawDescription = listing.description || listing.summary || listing.space || '';
+    const description = String(rawDescription).trim();
+    const safeDescription = description.length >= 20
+      ? description
+      : `${description || 'No description provided.'} Imported Airbnb listing.`.trim();
+
     return {
       _id: String(listing._id),
-      title: listing.name ? String(listing.name) : 'Untitled listing',
-      description: listing.description || listing.summary || listing.space || '',
+      title,
+      description: safeDescription,
       location: {
         city: String(getAddressField(address, 'market') || getAddressField(address, 'suburb') || getAddressField(address, 'street') || 'Unknown'),
         country: String(getAddressField(address, 'country') || 'Unknown'),
         address: getAddressField(address, 'street') ? String(getAddressField(address, 'street')) : '',
       },
       pricePerNight: toNumber(listing.price),
-      maxGuests: Math.max(1, toNumber(listing.accommodates, 1)),
+      maxGuests: Math.min(50, Math.max(1, toNumber(listing.accommodates, 1))),
       amenities: Array.isArray(listing.amenities) ? listing.amenities.map((amenity) => String(amenity)) : [],
       images: imageUrl ? [imageUrl] : [],
       host: hostId,
@@ -85,6 +144,7 @@ function buildListingDocs(listings) {
 
 function buildUserDocs(listings) {
   const usersById = new Map();
+  const importHashRounds = Math.max(4, toNumber(process.env.IMPORT_BCRYPT_ROUNDS, 6));
 
   function normalizeNamePart(value, fallback) {
     const trimmed = String(value || '').trim();
@@ -120,15 +180,19 @@ function buildUserDocs(listings) {
     }
 
     const hostId = String(host.host_id);
+    if (usersById.has(hostId)) {
+      continue;
+    }
+
     const email = String(host.email || `host-${hostId}@airbnb.local`).toLowerCase();
     const rawPassword = String(host.password || `imported-${hostId}`);
     const { firstName, lastName } = splitHostName(host.host_name || host.name, hostId);
 
-    usersById.set(String(host.host_id), {
+    usersById.set(hostId, {
       firstName,
       lastName,
       email,
-      passwordHash: bcrypt.hashSync(rawPassword, 10),
+      passwordHash: bcrypt.hashSync(rawPassword, importHashRounds),
       avatarUrl: host.host_picture_url ? String(host.host_picture_url) : '',
       role: 'host',
     });
@@ -158,7 +222,7 @@ function buildReviewDocs(listings) {
         reviewerName: review.reviewer_name ? String(review.reviewer_name) : '',
         date: new Date(review.date),
         comments: review.comments ? String(review.comments) : String(review.comment || ''),
-        rating: review.rating != null ? toNumber(review.rating) : undefined,
+        rating: review.rating != null ? Math.min(5, Math.max(0, toNumber(review.rating))) : undefined,
       });
     }
   }
@@ -171,27 +235,44 @@ async function importData(options = {}) {
   const shouldClear = options.shouldClear !== undefined
     ? options.shouldClear
     : String(process.env.IMPORT_CLEAR || 'true').toLowerCase() === 'true';
+  const manageConnection = options.manageConnection !== undefined
+    ? options.manageConnection
+    : true;
 
   if (!process.env.MONGO_URI) {
     throw new Error('MONGO_URI is missing. Add it to server/.env');
   }
 
+  console.log('[import] Reading dataset:', dataFile);
   const raw = fs.readFileSync(dataFile, 'utf-8');
+  console.log('[import] Parsing JSON...');
   const parsed = JSON.parse(raw);
 
   if (!Array.isArray(parsed)) {
     throw new Error('Dataset must be a JSON array of listing documents.');
   }
 
+  console.log('[import] Converting extended JSON...');
   const listings = parsed.map(convertExtendedJson);
+  console.log(`[import] Source records: ${listings.length}`);
+
+  console.log('[import] Building listing documents...');
   const listingDocs = buildListingDocs(listings);
+  console.log('[import] Building user documents...');
   const users = buildUserDocs(listings);
+  console.log('[import] Building review documents...');
   const reviews = buildReviewDocs(listings);
 
-  await mongoose.connect(process.env.MONGO_URI);
+  if (manageConnection) {
+    console.log('[import] Connecting to MongoDB...');
+    await mongoose.connect(process.env.MONGO_URI);
+  } else if (mongoose.connection.readyState !== 1) {
+    throw new Error('MongoDB must already be connected when manageConnection=false');
+  }
 
   try {
     if (shouldClear) {
+      console.log('[import] Clearing collections...');
       await Promise.all([
         Listing.deleteMany({}),
         User.deleteMany({}),
@@ -200,24 +281,18 @@ async function importData(options = {}) {
     }
 
     if (listingDocs.length > 0) {
-      await Listing.insertMany(listingDocs, { ordered: false });
+      console.log(`[import] Inserting listings (${listingDocs.length})...`);
+      await insertManyInBatches(Listing, listingDocs, 'listings');
     }
 
     if (users.length > 0) {
-      await User.bulkWrite(
-        users.map((user) => ({
-          updateOne: {
-            filter: { email: user.email },
-            update: { $set: user },
-            upsert: true,
-          },
-        })),
-        { ordered: false },
-      );
+      console.log(`[import] Upserting users (${users.length})...`);
+      await bulkUpsertUsersInBatches(users);
     }
 
     if (reviews.length > 0) {
-      await Review.insertMany(reviews, { ordered: false });
+      console.log(`[import] Inserting reviews (${reviews.length})...`);
+      await insertManyInBatches(Review, reviews, 'reviews');
     }
 
     const [listingCount, userCount, reviewCount] = await Promise.all([
@@ -234,7 +309,9 @@ async function importData(options = {}) {
       shouldClear,
     };
   } finally {
-    await mongoose.disconnect();
+    if (manageConnection) {
+      await mongoose.disconnect();
+    }
   }
 }
 
