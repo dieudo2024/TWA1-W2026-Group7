@@ -1,11 +1,11 @@
 import { useNavigate } from 'react-router-dom'
+import { clearAuthSession } from '../utils/authStorage'
 
 function LogoutButton() {
   const navigate = useNavigate()
 
   const handleLogout = () => {
-    localStorage.removeItem('authToken')
-    localStorage.removeItem('user')
+    clearAuthSession()
     navigate('/login')
   }
 

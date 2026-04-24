@@ -1,8 +1,8 @@
 import LogoutButton from '../components/LogoutButton'
+import { getStoredUser } from '../utils/authStorage'
 
 function WelcomePage() {
-  const storedUser = localStorage.getItem('user')
-  const user = storedUser ? JSON.parse(storedUser) : null
+  const user = getStoredUser()
   const displayName = user?.name || user?.email || 'Guest'
 
   return (
