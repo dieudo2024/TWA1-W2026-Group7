@@ -2060,12 +2060,3 @@ node_modules/
 /server/node_modules/whatwg-url/webidl2js-wrapper.js
 /server/node_modules/.package-lock.json
 >>>>>>> 289327b7a035135eaac78f684d5ef9ea3de616f3
-/server/routes/authRoutes.js
-/server/server.js
-/server/server.js
-/server/package.json.bak
-/server/package.json.bak
-/server/middleware/auth.js
-/server/models/User.js
-/server/routes/auth.js
-/server/scripts/repairUsersCollection.js
