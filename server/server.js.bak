@@ -19,6 +19,10 @@ mongoose.connect(process.env.MONGO_URI, {
 app.use(cors());
 app.use(express.json());
 
+<<<<<<< HEAD
+app.use('/api/auth', authRoutes);
+
+=======
 // Routes
 const authRoutes = require('./routes/auth');
 app.use('/api/auth', authRoutes);
@@ -28,6 +32,7 @@ app.get('/api/protected', require('./middleware/auth'), (req, res) => {
 res.json({ message: 'This is a protected route', user: req.user });
 });
 
+>>>>>>> 777d5d85858aed4472de29cc69fb2fc2347a1049
 // Basic route
 app.get('/', (req, res) => {
   res.send('Airbnb Server is running');
