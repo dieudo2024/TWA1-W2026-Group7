@@ -78,6 +78,10 @@ function RegisterForm() {
   const [form, setForm] = useState(initialForm)
   const [errors, setErrors] = useState({})
   const [submitted, setSubmitted] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
+  const [apiMessage, setApiMessage] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
 
   const onChange = (event) => {
     const { name, value, type, checked } = event.target
@@ -91,10 +95,41 @@ function RegisterForm() {
     event.preventDefault()
     const nextErrors = validate(form)
     setErrors(nextErrors)
+    setApiMessage('')
 
     if (Object.keys(nextErrors).length === 0) {
-      setSubmitted(true)
-      setForm(initialForm)
+      const submitRegistration = async () => {
+        try {
+          setSubmitting(true)
+          const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:3000'
+          const response = await fetch(`${apiBase}/api/auth/register`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(form),
+          })
+
+          const payload = await response.json()
+
+          if (!response.ok) {
+            setSubmitted(false)
+            setApiMessage(payload.message || 'Registration failed. Please try again.')
+            return
+          }
+
+          setSubmitted(true)
+          setApiMessage(payload.message || 'Registration successful.')
+          setForm(initialForm)
+        } catch (error) {
+          setSubmitted(false)
+          setApiMessage('Unable to reach the server. Please try again.')
+        } finally {
+          setSubmitting(false)
+        }
+      }
+
+      submitRegistration()
     } else {
       setSubmitted(false)
     }
@@ -104,8 +139,12 @@ function RegisterForm() {
     <form className="register-form" noValidate onSubmit={onSubmit}>
       {submitted && (
         <p className="success-banner" role="status">
-          Registration form validated successfully. Ready to send to API.
+          {apiMessage || 'Registration successful.'}
         </p>
+      )}
+
+      {!submitted && apiMessage && (
+        <p className="field-error" role="alert">{apiMessage}</p>
       )}
 
       <div className="form-grid">
@@ -192,27 +231,47 @@ function RegisterForm() {
 
         <div className="form-field">
           <label className="form-label" htmlFor="password">Password</label>
-          <input
-            id="password"
-            className="form-input"
-            name="password"
-            type="password"
-            value={form.password}
-            onChange={onChange}
-          />
+          <div className="password-input-wrap">
+            <input
+              id="password"
+              className="form-input"
+              name="password"
+              type={showPassword ? 'text' : 'password'}
+              value={form.password}
+              onChange={onChange}
+            />
+            <button
+              type="button"
+              className="input-action"
+              onClick={() => setShowPassword((prev) => !prev)}
+              aria-label={showPassword ? 'Hide password' : 'Show password'}
+            >
+              {showPassword ? 'Hide' : 'Show'}
+            </button>
+          </div>
           {errors.password && <p className="field-error">{errors.password}</p>}
         </div>
 
         <div className="form-field">
           <label className="form-label" htmlFor="confirmPassword">Confirm password</label>
-          <input
-            id="confirmPassword"
-            className="form-input"
-            name="confirmPassword"
-            type="password"
-            value={form.confirmPassword}
-            onChange={onChange}
-          />
+          <div className="password-input-wrap">
+            <input
+              id="confirmPassword"
+              className="form-input"
+              name="confirmPassword"
+              type={showConfirmPassword ? 'text' : 'password'}
+              value={form.confirmPassword}
+              onChange={onChange}
+            />
+            <button
+              type="button"
+              className="input-action"
+              onClick={() => setShowConfirmPassword((prev) => !prev)}
+              aria-label={showConfirmPassword ? 'Hide confirm password' : 'Show confirm password'}
+            >
+              {showConfirmPassword ? 'Hide' : 'Show'}
+            </button>
+          </div>
           {errors.confirmPassword && <p className="field-error">{errors.confirmPassword}</p>}
         </div>
       </div>
@@ -231,8 +290,8 @@ function RegisterForm() {
       </div>
       {errors.acceptTerms && <p className="field-error">{errors.acceptTerms}</p>}
 
-      <button className="submit-button" type="submit">
-        Create account
+      <button className="submit-button" type="submit" disabled={submitting}>
+        {submitting ? 'Creating account...' : 'Create account'}
       </button>
     </form>
   )
