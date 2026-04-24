@@ -2063,3 +2063,8 @@ node_modules/
 /server/routes/authRoutes.js
 /server/server.js
 /server/server.js
+/server/package.json.bak
+/server/package.json.bak
+/server/middleware/auth.js
+/server/models/User.js
+/server/routes/auth.js
