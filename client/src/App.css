@@ -212,3 +212,37 @@
   transform: translateY(1px);
 }
 
+.welcome-page {
+  min-height: 100svh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  box-sizing: border-box;
+}
+
+.welcome-card {
+  width: min(680px, 100%);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 32px;
+  box-shadow: var(--shadow);
+  background: color-mix(in srgb, var(--bg) 88%, transparent);
+  text-align: center;
+}
+
+.welcome-title {
+  margin: 0 0 10px;
+  font-size: clamp(1.9rem, 2.8vw, 2.7rem);
+}
+
+.welcome-subtitle {
+  margin: 0;
+  color: var(--text);
+}
+
+.welcome-actions {
+  margin-top: 26px;
+  display: flex;
+  justify-content: center;
+}
+

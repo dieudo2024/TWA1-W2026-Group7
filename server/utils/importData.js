@@ -2,6 +2,7 @@ require('dotenv').config();
 const fs = require('fs');
 const path = require('path');
 const mongoose = require('mongoose');
+const bcrypt = require('bcryptjs');
 
 const Listing = require('../models/Listing');
 const User = require('../models/User');
@@ -85,6 +86,33 @@ function buildListingDocs(listings) {
 function buildUserDocs(listings) {
   const usersById = new Map();
 
+  function normalizeNamePart(value, fallback) {
+    const trimmed = String(value || '').trim();
+    if (trimmed.length >= 2) {
+      return trimmed;
+    }
+
+    return fallback;
+  }
+
+  function splitHostName(fullName, hostId) {
+    const trimmed = String(fullName || '').trim();
+
+    if (!trimmed) {
+      return {
+        firstName: 'Host',
+        lastName: normalizeNamePart(hostId, 'User'),
+      };
+    }
+
+    const parts = trimmed.split(/\s+/);
+    const firstName = normalizeNamePart(parts[0], 'Host');
+    const lastNameSource = parts.length > 1 ? parts.slice(1).join(' ') : `Host ${hostId}`;
+    const lastName = normalizeNamePart(lastNameSource, 'User');
+
+    return { firstName, lastName };
+  }
+
   for (const listing of listings) {
     const host = listing.host || {};
     if (!host.host_id) {
@@ -92,12 +120,15 @@ function buildUserDocs(listings) {
     }
 
     const hostId = String(host.host_id);
+    const email = String(host.email || `host-${hostId}@airbnb.local`).toLowerCase();
+    const rawPassword = String(host.password || `imported-${hostId}`);
+    const { firstName, lastName } = splitHostName(host.host_name || host.name, hostId);
 
     usersById.set(String(host.host_id), {
-      _id: hostId,
-      name: String(host.host_name || host.name || `Host ${hostId}`),
-      email: String(host.email || `host-${hostId}@airbnb.local`).toLowerCase(),
-      password: String(host.password || `imported-${hostId}`),
+      firstName,
+      lastName,
+      email,
+      passwordHash: bcrypt.hashSync(rawPassword, 10),
       avatarUrl: host.host_picture_url ? String(host.host_picture_url) : '',
       role: 'host',
     });
@@ -176,7 +207,7 @@ async function importData(options = {}) {
       await User.bulkWrite(
         users.map((user) => ({
           updateOne: {
-            filter: { _id: user._id },
+            filter: { email: user.email },
             update: { $set: user },
             upsert: true,
           },

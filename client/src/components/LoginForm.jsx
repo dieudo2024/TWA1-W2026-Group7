@@ -57,10 +57,15 @@ function LoginForm() {
             body: JSON.stringify(form),
           })
 
-          const payload = await response.json()
+          let payload = null
+          try {
+            payload = await response.json()
+          } catch {
+            payload = null
+          }
 
           if (!response.ok) {
-            setApiMessage(payload.message || 'Login failed. Please try again.')
+            setApiMessage(payload?.message || `Login failed (HTTP ${response.status}). Please try again.`)
             return
           }
 
@@ -73,7 +78,7 @@ function LoginForm() {
           
           // Redirect to dashboard or home page
           setTimeout(() => {
-            navigate('/')
+            navigate('/welcome')
           }, 1000)
         } catch (error) {
           setApiMessage('Unable to reach the server. Please try again.')
