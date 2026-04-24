@@ -2068,3 +2068,4 @@ node_modules/
 /server/middleware/auth.js
 /server/models/User.js
 /server/routes/auth.js
+/server/scripts/repairUsersCollection.js
