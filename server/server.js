@@ -2,7 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
-const authRoutes = require('./routes/auth');
+const authRoutes = require('./routes/authRoutes');
 const Listing = require('./models/Listing');
 const { importData } = require('./utils/importData');
 
