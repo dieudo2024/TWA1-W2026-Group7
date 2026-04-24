@@ -1,5 +1,8 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { useNavigate } from 'react-router-dom'
+import { setAuthSession } from '../utils/authStorage'
+import { apiFetch } from '../utils/apiClient'
 
 const initialForm = {
   email: '',
@@ -27,6 +30,7 @@ function LoginForm() {
   const [errors, setErrors] = useState({})
   const [submitting, setSubmitting] = useState(false)
   const [apiMessage, setApiMessage] = useState('')
+  const [isSuccess, setIsSuccess] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const navigate = useNavigate()
 
@@ -43,19 +47,19 @@ function LoginForm() {
     const nextErrors = validate(form)
     setErrors(nextErrors)
     setApiMessage('')
+    setIsSuccess(false)
 
     if (Object.keys(nextErrors).length === 0) {
       const submitLogin = async () => {
         try {
           setSubmitting(true)
-          const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:3000'
-          const response = await fetch(`${apiBase}/api/auth/login`, {
+          const response = await apiFetch('/api/auth/login', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
             },
             body: JSON.stringify(form),
-          })
+          }, { includeAuth: false, clearSessionOn401: false })
 
           let payload = null
           try {
@@ -65,13 +69,13 @@ function LoginForm() {
           }
 
           if (!response.ok) {
+            setIsSuccess(false)
             setApiMessage(payload?.message || `Login failed (HTTP ${response.status}). Please try again.`)
             return
           }
 
-          // Store token in localStorage
-          localStorage.setItem('authToken', payload.token)
-          localStorage.setItem('user', JSON.stringify(payload.user))
+          setAuthSession(payload.token, payload.user)
+          setIsSuccess(true)
           
           setApiMessage('Login successful. Redirecting...')
           setForm(initialForm)
@@ -81,6 +85,7 @@ function LoginForm() {
             navigate('/welcome')
           }, 1000)
         } catch (error) {
+          setIsSuccess(false)
           setApiMessage('Unable to reach the server. Please try again.')
         } finally {
           setSubmitting(false)
@@ -95,8 +100,8 @@ function LoginForm() {
     <form className="register-form" noValidate onSubmit={onSubmit}>
       {apiMessage && (
         <p 
-          className={localStorage.getItem('authToken') ? 'success-banner' : 'field-error'} 
-          role={localStorage.getItem('authToken') ? 'status' : 'alert'}
+          className={isSuccess ? 'success-banner' : 'field-error'} 
+          role={isSuccess ? 'status' : 'alert'}
         >
           {apiMessage}
         </p>
@@ -147,7 +152,7 @@ function LoginForm() {
       </button>
 
       <p className="form-footer">
-        Don't have an account? <a href="/register">Sign up here</a>
+        Don't have an account? <Link to="/register">Sign up here</Link>
       </p>
     </form>
   )

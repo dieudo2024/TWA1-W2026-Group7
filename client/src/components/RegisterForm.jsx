@@ -1,5 +1,7 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { useNavigate } from 'react-router-dom'
+import { apiFetch } from '../utils/apiClient'
 
 const initialForm = {
   firstName: '',
@@ -103,14 +105,13 @@ function RegisterForm() {
       const submitRegistration = async () => {
         try {
           setSubmitting(true)
-          const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:3000'
-          const response = await fetch(`${apiBase}/api/auth/register`, {
+          const response = await apiFetch('/api/auth/register', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
             },
             body: JSON.stringify(form),
-          })
+          }, { includeAuth: false, clearSessionOn401: false })
 
           const payload = await response.json()
 
@@ -302,7 +303,7 @@ function RegisterForm() {
       </button>
 
       <p className="form-footer">
-        Already have an account? <a href="/login">Sign in here</a>
+        Already have an account? <Link to="/login">Sign in here</Link>
       </p>
     </form>
   )
