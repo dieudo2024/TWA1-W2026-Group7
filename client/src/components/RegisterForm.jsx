@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 
 const initialForm = {
   firstName: '',
@@ -82,6 +83,7 @@ function RegisterForm() {
   const [apiMessage, setApiMessage] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+  const navigate = useNavigate()
 
   const onChange = (event) => {
     const { name, value, type, checked } = event.target
@@ -121,6 +123,11 @@ function RegisterForm() {
           setSubmitted(true)
           setApiMessage(payload.message || 'Registration successful.')
           setForm(initialForm)
+
+          // Redirect to login after 2 seconds
+          setTimeout(() => {
+            navigate('/login')
+          }, 2000)
         } catch (error) {
           setSubmitted(false)
           setApiMessage('Unable to reach the server. Please try again.')
@@ -293,6 +300,10 @@ function RegisterForm() {
       <button className="submit-button" type="submit" disabled={submitting}>
         {submitting ? 'Creating account...' : 'Create account'}
       </button>
+
+      <p className="form-footer">
+        Already have an account? <a href="/login">Sign in here</a>
+      </p>
     </form>
   )
 }
