@@ -3,17 +3,48 @@ const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
 const authRoutes = require('./routes/authRoutes');
+const Listing = require('./models/Listing');
+const { importData } = require('./utils/importData');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Connect to MongoDB
-mongoose.connect(process.env.MONGO_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-})
-.then(() => console.log('MongoDB connected'))
-.catch(err => console.error('MongoDB connection error:', err));
+async function seedDatabaseIfEmpty() {
+  const shouldSeedOnStart = String(process.env.SEED_ON_START || 'true').toLowerCase() === 'true';
+
+  if (!shouldSeedOnStart) {
+    return;
+  }
+
+  const listingCount = await Listing.estimatedDocumentCount();
+  if (listingCount > 0) {
+    return;
+  }
+
+  console.log('No listings found. Importing dataset...');
+
+  const result = await importData({
+    shouldClear: false,
+    manageConnection: false,
+  });
+
+  console.log(`Seed complete. Listings: ${result.listingCount}, Users: ${result.userCount}, Reviews: ${result.reviewCount}`);
+}
+
+async function connectMongo() {
+  try {
+    await mongoose.connect(process.env.MONGO_URI, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    });
+
+    console.log('MongoDB connected');
+
+    await seedDatabaseIfEmpty();
+  } catch (err) {
+    console.error('MongoDB startup error:', err.message);
+  }
+}
 
 // Middleware
 app.use(cors());
@@ -36,3 +67,5 @@ app.get('/', (req, res) => {
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
 });
+
+connectMongo();
