@@ -2,6 +2,7 @@
 node_modules/
 =======
 >>>>>>> 289327b7a035135eaac78f684d5ef9ea3de616f3
+screenshots
 /server/node_modules/.bin/mime
 /server/node_modules/.bin/mime.cmd
 /server/node_modules/.bin/mime.ps1
