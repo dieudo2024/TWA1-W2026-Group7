@@ -511,6 +511,74 @@
   color: var(--text);
 }
 
+.browse-pagination {
+  margin: 28px auto 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+.browse-page-button {
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 8px 14px;
+  background: var(--bg);
+  color: var(--text-h);
+  font: inherit;
+  cursor: pointer;
+  transition: border-color 0.2s ease, transform 0.2s ease;
+}
+
+.browse-page-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+  transform: none;
+}
+
+.browse-page-button:hover:not(:disabled) {
+  border-color: var(--accent-border);
+  transform: translateY(-1px);
+}
+
+.browse-page-status {
+  color: var(--text);
+}
+
+.browse-pagination {
+  margin: 28px auto 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+.browse-page-button {
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 8px 14px;
+  background: var(--bg);
+  color: var(--text-h);
+  font: inherit;
+  cursor: pointer;
+  transition: border-color 0.2s ease, transform 0.2s ease;
+}
+
+.browse-page-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+  transform: none;
+}
+
+.browse-page-button:hover:not(:disabled) {
+  border-color: var(--accent-border);
+  transform: translateY(-1px);
+}
+
+.browse-page-status {
+  color: var(--text);
+}
+
 .listing-detail-page {
   min-height: 100svh;
   padding: 32px 24px 64px;
