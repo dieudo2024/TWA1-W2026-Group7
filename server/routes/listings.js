@@ -48,7 +48,7 @@ router.get('/:id/reviews', async (req, res) => {
 // GET /api/listings/:id - Get detail for one specific listing[cite: 1]
 router.get('/:id', async (req, res) => {
     try {
-        const listing = await Listing.findById(req.params.id).populate('host', 'firstName lastName');
+        const listing = await Listing.findById(req.params.id);
         if (!listing) return res.status(404).json({ message: 'Listing not found' });
         res.json(listing);
     } catch (err) {

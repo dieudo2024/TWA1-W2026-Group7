@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { Link, useParams } from 'react-router-dom'
 import { apiFetch } from '../utils/apiClient'
 
 function ListingDetailPage() {
@@ -97,15 +97,18 @@ function ListingDetailPage() {
     <main className="listing-detail-page">
       {isLoading ? (
         <section className="listing-detail-hero">
+          <Link to="/browse" className="listing-detail-back">Back to browse</Link>
           <h1>Loading listing...</h1>
         </section>
       ) : errorMessage ? (
         <section className="listing-detail-hero">
+          <Link to="/browse" className="listing-detail-back">Back to browse</Link>
           <h1>Listing details</h1>
           <p>{errorMessage}</p>
         </section>
       ) : (
         <section className="listing-detail-hero">
+          <Link to="/browse" className="listing-detail-back">Back to browse</Link>
           <div className="listing-detail-media">
             {listing.images?.[0] ? (
               <img src={listing.images[0]} alt={listing.title} />
