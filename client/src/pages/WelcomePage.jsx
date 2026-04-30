@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import LogoutButton from '../components/LogoutButton'
 import { getStoredUser } from '../utils/authStorage'
 
@@ -13,6 +14,9 @@ function WelcomePage() {
           You are now signed in to Airbnb Listing Explorer.
         </p>
         <div className="welcome-actions">
+          <Link to="/browse" className="browse-link">
+            Browse listings
+          </Link>
           <LogoutButton />
         </div>
       </section>
