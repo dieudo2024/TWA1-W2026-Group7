@@ -3,6 +3,8 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import RegisterPage from './pages/RegisterPage'
 import LoginPage from './pages/LoginPage'
 import WelcomePage from './pages/WelcomePage'
+import BrowsePage from './pages/BrowsePage'
+import ListingDetailPage from './pages/ListingDetailPage'
 import { getAuthToken, subscribeToAuthChanges } from './utils/authStorage'
 import './App.css'
 
@@ -49,6 +51,22 @@ function App() {
           element={(
             <RequireAuth isAuthenticated={isAuthenticated}>
               <WelcomePage />
+            </RequireAuth>
+          )}
+        />
+        <Route
+          path="/browse"
+          element={(
+            <RequireAuth isAuthenticated={isAuthenticated}>
+              <BrowsePage />
+            </RequireAuth>
+          )}
+        />
+        <Route
+          path="/listings/:id"
+          element={(
+            <RequireAuth isAuthenticated={isAuthenticated}>
+              <ListingDetailPage />
             </RequireAuth>
           )}
         />
