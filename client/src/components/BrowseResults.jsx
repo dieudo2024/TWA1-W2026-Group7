@@ -9,8 +9,8 @@ function BrowseResults({ activeFilters, results, isLoading, errorMessage }) {
           <p>Showing listings that match your current view.</p>
         </div>
         <div className="browse-chips" aria-label="Active filters">
-          {activeFilters.slice(0, 6).map((filter) => (
-            <span key={filter} className="browse-chip">{filter}</span>
+          {activeFilters.slice(0, 6).map((filter, index) => (
+            <span key={`${filter}-${index}`} className="browse-chip">{filter}</span>
           ))}
         </div>
       </div>
@@ -22,7 +22,7 @@ function BrowseResults({ activeFilters, results, isLoading, errorMessage }) {
         <p className="browse-empty">No listings found yet.</p>
       ) : (
         <div className="browse-cards">
-          {results.map((item) => (
+          {results.filter((item) => item.id).map((item) => (
             <BrowseResultCard
               key={item.id}
               id={item.id}

@@ -3,8 +3,7 @@ const mongoose = require('mongoose');
 const listingSchema = new mongoose.Schema(
 	{
 		_id: {
-			type: mongoose.Schema.Types.ObjectId,
-			ref: 'Listing',
+			type: String,
 			required: true,
 		},
 		title: {
