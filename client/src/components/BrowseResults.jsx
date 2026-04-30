@@ -25,6 +25,7 @@ function BrowseResults({ activeFilters, results, isLoading, errorMessage }) {
           {results.map((item) => (
             <BrowseResultCard
               key={item.id}
+              id={item.id}
               title={item.title}
               location={item.location}
               price={item.price}

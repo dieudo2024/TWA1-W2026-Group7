@@ -461,6 +461,15 @@
   overflow: hidden;
   background: var(--bg);
   box-shadow: var(--shadow);
+  text-decoration: none;
+  color: inherit;
+  display: block;
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.browse-result-card:hover {
+  border-color: var(--accent-border);
+  transform: translateY(-2px);
 }
 
 .browse-result-media {
@@ -573,6 +582,54 @@
 .listing-detail-amenities ul {
   margin: 0;
   padding-left: 18px;
+  color: var(--text);
+}
+
+.listing-detail-reviews {
+  margin-top: 18px;
+}
+
+.listing-detail-reviews h2 {
+  margin: 14px 0 10px;
+  font-size: 1.1rem;
+}
+
+.listing-detail-reviews ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 12px;
+}
+
+.listing-review {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px;
+  background: var(--bg);
+}
+
+.listing-review-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.listing-review-name {
+  margin: 0;
+  font-weight: 600;
+  color: var(--text-h);
+}
+
+.listing-review-meta {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--text);
+}
+
+.listing-review-comment {
+  margin: 8px 0 0;
   color: var(--text);
 }
 

@@ -1,10 +1,12 @@
-function BrowseResultCard({ title, location, price, tag, imageUrl }) {
+import { Link } from 'react-router-dom'
+
+function BrowseResultCard({ id, title, location, price, tag, imageUrl }) {
   const mediaStyle = imageUrl
     ? { backgroundImage: `url("${imageUrl}")`, backgroundSize: 'cover', backgroundPosition: 'center' }
     : undefined
 
   return (
-    <article className="browse-result-card">
+    <Link className="browse-result-card" to={`/listings/${id}`}>
       <div className="browse-result-media" style={mediaStyle} aria-hidden="true" />
       <div className="browse-result-body">
         <p className="browse-result-tag">{tag}</p>
@@ -12,7 +14,7 @@ function BrowseResultCard({ title, location, price, tag, imageUrl }) {
         <p>{location}</p>
         <p>{price}</p>
       </div>
-    </article>
+    </Link>
   )
 }
 
