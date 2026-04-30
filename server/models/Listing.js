@@ -30,6 +30,11 @@ const listingSchema = new mongoose.Schema(
 			required: true,
 			min: 0,
 		},
+		propertyType: {
+			type: String,
+			trim: true,
+			default: '',
+		},
 		maxGuests: {
 			type: Number,
 			required: true,

@@ -132,6 +132,11 @@ function buildListingDocs(listings) {
         address: getAddressField(address, 'street') ? String(getAddressField(address, 'street')) : '',
       },
       pricePerNight: toNumber(listing.price),
+      propertyType: listing.property_type
+        ? String(listing.property_type).trim()
+        : listing.room_type
+          ? String(listing.room_type).trim()
+          : '',
       maxGuests: Math.min(50, Math.max(1, toNumber(listing.accommodates, 1))),
       amenities: Array.isArray(listing.amenities) ? listing.amenities.map((amenity) => String(amenity)) : [],
       images: imageUrl ? [imageUrl] : [],
