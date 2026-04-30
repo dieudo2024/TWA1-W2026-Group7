@@ -111,6 +111,12 @@ function buildListingDocs(listings) {
     const address = listing.address || {};
     const imageUrl = listing.images && listing.images.picture_url ? String(listing.images.picture_url) : '';
     const hostId = listing.host && listing.host.host_id ? String(listing.host.host_id) : String(listing._id);
+    const hostName = listing.host && (listing.host.host_name || listing.host.name)
+      ? String(listing.host.host_name || listing.host.name)
+      : '';
+    const hostAbout = listing.host && listing.host.host_about ? String(listing.host.host_about) : '';
+    const hostAvatarUrl = listing.host && listing.host.host_picture_url ? String(listing.host.host_picture_url) : '';
+    const hostIsSuperhost = listing.host && (listing.host.host_is_superhost === true || listing.host.host_is_superhost === 't');
 
     const rawTitle = listing.name ? String(listing.name).trim() : '';
     const fallbackTitle = `Listing ${String(listing._id || '').slice(0, 12) || 'Untitled'}`;
@@ -132,10 +138,19 @@ function buildListingDocs(listings) {
         address: getAddressField(address, 'street') ? String(getAddressField(address, 'street')) : '',
       },
       pricePerNight: toNumber(listing.price),
+      propertyType: listing.property_type
+        ? String(listing.property_type).trim()
+        : listing.room_type
+          ? String(listing.room_type).trim()
+          : '',
       maxGuests: Math.min(50, Math.max(1, toNumber(listing.accommodates, 1))),
       amenities: Array.isArray(listing.amenities) ? listing.amenities.map((amenity) => String(amenity)) : [],
       images: imageUrl ? [imageUrl] : [],
       host: hostId,
+      hostName,
+      hostAbout,
+      hostAvatarUrl,
+      hostIsSuperhost,
       averageRating: toNumber(listing.review_scores_rating) > 0 ? toNumber(listing.review_scores_rating) / 20 : 0,
       reviewCount: toNumber(listing.number_of_reviews),
     };

@@ -119,6 +119,24 @@ function ListingDetailPage() {
           <div className="listing-detail-info">
             <h1>{listing.title}</h1>
             {locationLabel && <p className="listing-detail-location">{locationLabel}</p>}
+            {(listing.hostName || listing.hostAvatarUrl || listing.hostAbout) ? (
+              <div className="listing-detail-host">
+                {listing.hostAvatarUrl ? (
+                  <img src={listing.hostAvatarUrl} alt={listing.hostName || 'Host'} />
+                ) : (
+                  <div className="listing-detail-host-avatar" aria-hidden="true" />
+                )}
+                <div>
+                  <p className="listing-detail-host-name">
+                    Hosted by {listing.hostName || 'Host'}
+                    {listing.hostIsSuperhost ? ' · Superhost' : ''}
+                  </p>
+                  {listing.hostAbout ? (
+                    <p className="listing-detail-host-about">{listing.hostAbout}</p>
+                  ) : null}
+                </div>
+              </div>
+            ) : null}
             <p className="listing-detail-price">${listing.pricePerNight} per night</p>
             <p className="listing-detail-guests">Sleeps up to {listing.maxGuests} guests</p>
             <p className="listing-detail-description">{listing.description}</p>
