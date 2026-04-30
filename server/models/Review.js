@@ -47,4 +47,7 @@ const reviewSchema = new mongoose.Schema(
 	},
 );
 
+// Enforce uniqueness of review
+reviewSchema.index({ listing: 1, author: 1 }, { unique: true});
+
 module.exports = mongoose.model('Review', reviewSchema);
