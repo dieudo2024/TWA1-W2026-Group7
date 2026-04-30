@@ -657,6 +657,38 @@
   color: var(--text-h);
 }
 
+.listing-detail-host {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin: 0 0 14px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--bg);
+}
+
+.listing-detail-host img,
+.listing-detail-host-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: color-mix(in srgb, var(--accent) 15%, var(--bg));
+}
+
+.listing-detail-host-name {
+  margin: 0 0 4px;
+  font-weight: 600;
+  color: var(--text-h);
+}
+
+.listing-detail-host-about {
+  margin: 0;
+  color: var(--text);
+  font-size: 0.95rem;
+}
+
 .listing-detail-guests,
 .listing-detail-description {
   margin: 0 0 12px;

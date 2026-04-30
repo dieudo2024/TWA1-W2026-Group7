@@ -55,6 +55,25 @@ const listingSchema = new mongoose.Schema(
 			required: true,
 			index: true,
 		},
+		hostName: {
+			type: String,
+			trim: true,
+			default: '',
+		},
+		hostAbout: {
+			type: String,
+			trim: true,
+			default: '',
+		},
+		hostAvatarUrl: {
+			type: String,
+			trim: true,
+			default: '',
+		},
+		hostIsSuperhost: {
+			type: Boolean,
+			default: false,
+		},
 		averageRating: {
 			type: Number,
 			default: 0,
