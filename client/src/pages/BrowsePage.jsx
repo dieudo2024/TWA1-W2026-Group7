@@ -97,7 +97,7 @@ function BrowsePage() {
             imageUrl: listing.images?.[0] || '',
             tag: listing.averageRating ? `${listing.averageRating.toFixed(1)} rating` : 'New listing',
           }
-        })
+        }).filter((item) => Boolean(item.id))
 
         setResults(nextResults)
       } catch (error) {
