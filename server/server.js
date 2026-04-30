@@ -3,6 +3,7 @@ const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
 const authRoutes = require('./routes/authRoutes');
+const listingsRoutes = require('./routes/listings');
 const Listing = require('./models/Listing');
 const { importData } = require('./utils/importData');
 
@@ -52,6 +53,7 @@ app.use(express.json());
 
 // Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/listings', listingsRoutes);
 
 // Example protected route
 app.get('/api/protected', require('./middleware/auth'), (req, res) => {
