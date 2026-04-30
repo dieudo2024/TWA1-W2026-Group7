@@ -53,6 +53,10 @@ app.use(express.json());
 // Routes
 app.use('/api/auth', authRoutes);
 
+app.use('/api/reviews', require('./routes/reviews'));
+
+// app.use('/api/listings', require('./routes/listings'));
+
 // Example protected route
 app.get('/api/protected', require('./middleware/auth'), (req, res) => {
 res.json({ message: 'This is a protected route', user: req.user });
