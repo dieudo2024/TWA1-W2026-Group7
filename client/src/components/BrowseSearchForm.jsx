@@ -1,18 +1,14 @@
 function BrowseSearchForm({
   query,
   location,
-  checkIn,
-  checkOut,
   guests,
   onQueryChange,
   onLocationChange,
-  onCheckInChange,
-  onCheckOutChange,
   onGuestsChange,
-  onSubmit,
+  onClear,
 }) {
   return (
-    <form className="browse-card browse-search" onSubmit={onSubmit}>
+    <form className="browse-card browse-search">
       <div className="browse-card-header">
         <h2>Search</h2>
         <p>Start with a location, dates, and a quick keyword.</p>
@@ -39,24 +35,6 @@ function BrowseSearchForm({
           />
         </label>
         <label className="browse-field">
-          <span>Check-in</span>
-          <input
-            className="browse-input"
-            type="date"
-            value={checkIn}
-            onChange={onCheckInChange}
-          />
-        </label>
-        <label className="browse-field">
-          <span>Check-out</span>
-          <input
-            className="browse-input"
-            type="date"
-            value={checkOut}
-            onChange={onCheckOutChange}
-          />
-        </label>
-        <label className="browse-field">
           <span>Guests</span>
           <input
             className="browse-input"
@@ -67,8 +45,8 @@ function BrowseSearchForm({
             onChange={onGuestsChange}
           />
         </label>
-        <button type="submit" className="browse-submit">
-          Search listings
+        <button type="button" className="browse-submit" onClick={onClear}>
+          Clear filters
         </button>
       </div>
     </form>

@@ -1,5 +1,8 @@
 // routes/reviews.js
 const express = require('express');
+const path = require('path');
+const fs = require('fs');
+const multer = require('multer');
 const router = express.Router();
 
 const Review = require('../models/Review');
@@ -8,8 +11,33 @@ const Listing = require('../models/Listing');
 const auth = require('../middleware/auth');
 const reviewOwner = require('../middleware/reviewOwner');
 
+const uploadsDir = path.join(__dirname, '..', 'uploads');
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    if (!fs.existsSync(uploadsDir)) {
+      fs.mkdirSync(uploadsDir, { recursive: true });
+    }
+    cb(null, uploadsDir);
+  },
+  filename: (req, file, cb) => {
+    const ext = path.extname(file.originalname).toLowerCase();
+    cb(null, `${Date.now()}-${Math.round(Math.random() * 1e9)}${ext}`);
+  },
+});
+
+const upload = multer({
+  storage,
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype && file.mimetype.startsWith('image/')) {
+      return cb(null, true);
+    }
+    return cb(new Error('Only image uploads are allowed'));
+  },
+});
+
 // CREATE REVIEW
-router.post('/', auth, async (req, res) => {
+router.post('/', auth, upload.single('photo'), async (req, res) => {
   try {
     const { listingId, rating, comments } = req.body;
 
@@ -28,8 +56,9 @@ router.post('/', auth, async (req, res) => {
       listing: listingId,
       author: req.user._id,
       reviewerName: `${req.user.firstName} ${req.user.lastName}`,
-      rating,
+      rating: Number(rating),
       comments,
+      photoPath: req.file ? `/uploads/${req.file.filename}` : undefined,
     });
 
     res.status(201).json(review);
@@ -42,12 +71,16 @@ router.post('/', auth, async (req, res) => {
 });
 
 // UPDATE REVIEW
-router.put('/:id', auth, reviewOwner, async (req, res) => {
+router.put('/:id', auth, reviewOwner, upload.single('photo'), async (req, res) => {
   try {
     const { rating, comments } = req.body;
 
-    req.review.rating = rating ?? req.review.rating;
+    req.review.rating = rating !== undefined ? Number(rating) : req.review.rating;
     req.review.comments = comments ?? req.review.comments;
+
+    if (req.file) {
+      req.review.photoPath = `/uploads/${req.file.filename}`;
+    }
 
     await req.review.save();
 
