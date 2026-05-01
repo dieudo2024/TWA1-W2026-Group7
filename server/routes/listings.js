@@ -42,4 +42,18 @@ router.get('/:id', async (req, res) => {
     }
 });
 
+// GET /api/listings/:id/reviews - Get all reviews for a specific listing
+router.get('/:id/reviews', async (req, res) => {
+    try {
+        // This looks in your 'reviews' collection for any review 
+        // where the 'listing' field matches the ID in the URL.
+        const reviews = await Review.find({ listing: req.params.id })
+            .sort({ date: -1 }); // Show newest first
+
+        res.json(reviews);
+    } catch (err) {
+        res.status(500).json({ message: "Error fetching reviews", error: err.message });
+    }
+});
+
 module.exports = router;
