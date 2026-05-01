@@ -784,6 +784,13 @@
   resize: vertical;
 }
 
+.review-photo-preview {
+  width: min(220px, 100%);
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  object-fit: cover;
+}
+
 .review-actions {
   display: flex;
   align-items: center;
@@ -868,6 +875,14 @@
 .listing-review-comment {
   margin: 8px 0 0;
   color: var(--text);
+}
+
+.listing-review-photo {
+  margin-top: 10px;
+  width: min(240px, 100%);
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  object-fit: cover;
 }
 
 .listing-review-actions {
