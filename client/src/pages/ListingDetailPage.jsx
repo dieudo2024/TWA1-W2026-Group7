@@ -13,12 +13,15 @@ function ListingDetailPage() {
   const [reviewsError, setReviewsError] = useState("");
   const [reviewRating, setReviewRating] = useState(5);
   const [reviewComments, setReviewComments] = useState("");
+  const [reviewPhoto, setReviewPhoto] = useState(null);
+  const [reviewPhotoPreview, setReviewPhotoPreview] = useState("");
   const [reviewSubmitting, setReviewSubmitting] = useState(false);
   const [reviewError, setReviewError] = useState("");
   const [reviewSuccess, setReviewSuccess] = useState("");
 
   const user = getStoredUser();
   const currentUserId = user?.id;
+  const apiBase = import.meta.env.VITE_API_URL || "http://localhost:3000";
 
   const locationLabel = useMemo(() => {
     if (!listing?.location) {
@@ -125,11 +128,29 @@ function ListingDetailPage() {
     if (userReview) {
       setReviewRating(userReview.rating ?? 5);
       setReviewComments(userReview.comments ?? "");
+      setReviewPhoto(null);
+      setReviewPhotoPreview("");
     } else {
       setReviewRating(5);
       setReviewComments("");
+      setReviewPhoto(null);
+      setReviewPhotoPreview("");
     }
   }, [userReview]);
+
+  useEffect(() => {
+    if (!reviewPhoto) {
+      setReviewPhotoPreview("");
+      return undefined;
+    }
+
+    const nextPreview = URL.createObjectURL(reviewPhoto);
+    setReviewPhotoPreview(nextPreview);
+
+    return () => {
+      URL.revokeObjectURL(nextPreview);
+    };
+  }, [reviewPhoto]);
 
   const reloadReviews = async () => {
     setIsLoadingReviews(true);
@@ -169,33 +190,25 @@ function ListingDetailPage() {
     setReviewSubmitting(true);
 
     try {
-      const payload = {
-        rating: Number(reviewRating),
-        comments: trimmedComments,
-      };
+      const formData = new FormData();
+      formData.set("rating", String(reviewRating));
+      formData.set("comments", trimmedComments);
+      if (reviewPhoto) {
+        formData.set("photo", reviewPhoto);
+      }
 
       let response;
       if (userReview?._id) {
-        response = await apiFetch(
-          `/api/reviews/${userReview._id}`,
-          {
-            method: "PUT",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(payload),
-          },
-        );
+        response = await apiFetch(`/api/reviews/${userReview._id}`, {
+          method: "PUT",
+          body: formData,
+        });
       } else {
-        response = await apiFetch(
-          "/api/reviews",
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              listingId: id,
-              ...payload,
-            }),
-          },
-        );
+        formData.set("listingId", id);
+        response = await apiFetch("/api/reviews", {
+          method: "POST",
+          body: formData,
+        });
       }
 
       if (!response.ok) {
@@ -204,12 +217,24 @@ function ListingDetailPage() {
       }
 
       await reloadReviews();
+      setReviewPhoto(null);
+      setReviewPhotoPreview("");
       setReviewSuccess(userReview ? "Review updated." : "Review posted.");
     } catch (error) {
       setReviewError(error.message || "Unable to save your review.");
     } finally {
       setReviewSubmitting(false);
     }
+  };
+
+  const resolvePhotoUrl = (photoPath) => {
+    if (!photoPath) {
+      return "";
+    }
+    if (photoPath.startsWith("http://") || photoPath.startsWith("https://")) {
+      return photoPath;
+    }
+    return `${apiBase}${photoPath}`;
   };
 
   const handleReviewDelete = async (reviewId) => {
@@ -366,7 +391,24 @@ function ListingDetailPage() {
                       placeholder="Share your stay details..."
                     />
                   </label>
+                  <label className="review-label">
+                    Optional photo
+                    <input
+                      className="review-input"
+                      type="file"
+                      accept="image/*"
+                      onChange={(event) => setReviewPhoto(event.target.files?.[0] || null)}
+                      disabled={reviewSubmitting}
+                    />
+                  </label>
                 </div>
+                {reviewPhotoPreview ? (
+                  <img
+                    className="review-photo-preview"
+                    src={reviewPhotoPreview}
+                    alt="Selected review"
+                  />
+                ) : null}
                 <div className="review-actions">
                   <button
                     type="submit"
@@ -410,6 +452,14 @@ function ListingDetailPage() {
                         <p className="listing-review-comment">
                           {review.comments}
                         </p>
+                      ) : null}
+                      {review.photoPath ? (
+                        <img
+                          className="listing-review-photo"
+                          src={resolvePhotoUrl(review.photoPath)}
+                          alt="Review"
+                          loading="lazy"
+                        />
                       ) : null}
                       {review.author === currentUserId ? (
                         <div className="listing-review-actions">

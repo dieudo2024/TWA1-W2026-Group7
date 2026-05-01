@@ -2070,3 +2070,4 @@ screenshots
 /server/models/User.js
 /server/routes/auth.js
 /server/scripts/repairUsersCollection.js
+/server/uploads
