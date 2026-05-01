@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Listing = require('../models/Listing'); // Imports the schema you just showed me
+const Review = require('../models/Review');
 
 // GET /api/listings - Get all listings (Paginated + Filtered)
 router.get('/', async (req, res) => {

@@ -1,8 +1,10 @@
 import { useEffect, useMemo, useState } from 'react'
+import { Link } from 'react-router-dom'
 import BrowseFilters from '../components/BrowseFilters'
 import BrowseHero from '../components/BrowseHero'
 import BrowseResults from '../components/BrowseResults'
 import BrowseSearchForm from '../components/BrowseSearchForm'
+import LogoutButton from '../components/LogoutButton'
 import { apiFetch } from '../utils/apiClient'
 
 const roomTypes = ['Entire place', 'Private room', 'Shared room', 'Hotel room']
@@ -149,6 +151,14 @@ function BrowsePage() {
 
   return (
     <main className="browse-page">
+      <nav className="browse-tabs" aria-label="Browse navigation">
+        <div className="browse-tabs-inner">
+          <Link to="/browse" className="browse-tab-link" aria-current="page">
+            Browse listings
+          </Link>
+          <LogoutButton />
+        </div>
+      </nav>
       <BrowseHero />
 
       <section className="browse-grid" aria-label="Search and filters">
