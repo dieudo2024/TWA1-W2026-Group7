@@ -10,7 +10,7 @@ function escapeRegExp(value) {
 // GET /api/listings - Get all listings (Paginated + Filtered)
 router.get('/', async (req, res) => {
     try {
-        const { city, minPrice, maxPrice, type, guests, q, page = 1 } = req.query;
+        const { city, minPrice, maxPrice, type, guests, q, minRating, page = 1 } = req.query;
         const limit = 10; // Limits results to 10 per page
         const skip = (page - 1) * limit;
 
@@ -25,6 +25,9 @@ router.get('/', async (req, res) => {
         if (guests) {
             query.maxGuests = { $gte: Number(guests) };
         }
+        if (minRating) {
+            query.averageRating = { $gte: Number(minRating) };
+        }
         if (type) {
             const typeRegex = new RegExp(`^${escapeRegExp(type)}$`, 'i');
             query.$or = [
@@ -38,6 +41,10 @@ router.get('/', async (req, res) => {
                 $or: [
                     { title: keywordRegex },
                     { description: keywordRegex },
+                    { 'location.city': keywordRegex },
+                    { 'location.country': keywordRegex },
+                    { 'location.address': keywordRegex },
+                    { amenities: keywordRegex },
                 ],
             });
         }

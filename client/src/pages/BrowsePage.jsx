@@ -42,6 +42,7 @@ function BrowsePage() {
       amenitiesLabel && amenitiesLabel,
     ].filter(Boolean)
   }, [
+    query,
     location,
     checkIn,
     checkOut,
@@ -71,7 +72,7 @@ function BrowsePage() {
 
   useEffect(() => {
     setPage(1)
-  }, [query, location, priceMin, priceMax, selectedRoomType, guests])
+  }, [query, location, priceMin, priceMax, rating, selectedRoomType, guests])
 
   useEffect(() => {
     let isActive = true
@@ -126,6 +127,10 @@ function BrowsePage() {
 
         if (priceMax) {
           params.set('maxPrice', String(priceMax))
+        }
+
+        if (rating) {
+          params.set('minRating', rating)
         }
 
         if (selectedRoomType) {
@@ -185,7 +190,7 @@ function BrowsePage() {
     return () => {
       isActive = false
     }
-  }, [query, location, priceMin, priceMax, selectedRoomType, guests, page])
+  }, [query, location, priceMin, priceMax, rating, selectedRoomType, guests, page])
 
   return (
     <main className="browse-page">
