@@ -143,6 +143,7 @@ function buildListingDocs(listings) {
         : listing.room_type
           ? String(listing.room_type).trim()
           : '',
+      roomType: listing.room_type ? String(listing.room_type).trim() : '',
       maxGuests: Math.min(50, Math.max(1, toNumber(listing.accommodates, 1))),
       amenities: Array.isArray(listing.amenities) ? listing.amenities.map((amenity) => String(amenity)) : [],
       images: imageUrl ? [imageUrl] : [],
