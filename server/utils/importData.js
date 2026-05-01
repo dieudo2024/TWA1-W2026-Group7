@@ -112,8 +112,8 @@ function buildListingDocs(listings) {
     const imageUrl = listing.images && listing.images.picture_url ? String(listing.images.picture_url) : '';
     const hostId = listing.host && listing.host.host_id ? String(listing.host.host_id) : String(listing._id);
     const hostName = listing.host && (listing.host.host_name || listing.host.name)
-      ? String(listing.host.host_name || listing.host.name)
-      : '';
+          ? String(listing.host.host_name || listing.host.name)
+          : `Host ${hostId}`;
     const hostAbout = listing.host && listing.host.host_about ? String(listing.host.host_about) : '';
     const hostAvatarUrl = listing.host && listing.host.host_picture_url ? String(listing.host.host_picture_url) : '';
     const hostIsSuperhost = listing.host && (listing.host.host_is_superhost === true || listing.host.host_is_superhost === 't');
