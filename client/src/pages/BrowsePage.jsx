@@ -70,7 +70,7 @@ function BrowsePage() {
 
   useEffect(() => {
     setPage(1)
-  }, [location, priceMin, priceMax, selectedRoomType])
+  }, [location, priceMin, priceMax, selectedRoomType, guests])
 
   useEffect(() => {
     let isActive = true
@@ -127,6 +127,10 @@ function BrowsePage() {
           params.set('type', selectedRoomType)
         }
 
+        if (guests) {
+          params.set('guests', String(guests))
+        }
+
         params.set('page', String(page))
 
         const queryString = params.toString()
@@ -176,7 +180,7 @@ function BrowsePage() {
     return () => {
       isActive = false
     }
-  }, [location, priceMin, priceMax, selectedRoomType, page])
+  }, [location, priceMin, priceMax, selectedRoomType, guests, page])
 
   return (
     <main className="browse-page">
