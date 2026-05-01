@@ -32,6 +32,7 @@ function BrowsePage() {
     const amenitiesLabel = Array.from(selectedAmenities).join(', ')
 
     return [
+      query && `Keyword: ${query}`,
       location && `Location: ${location}`,
       checkIn && checkOut && `${checkIn} to ${checkOut}`,
       guests && `${guests} guests`,
@@ -70,7 +71,7 @@ function BrowsePage() {
 
   useEffect(() => {
     setPage(1)
-  }, [location, priceMin, priceMax, selectedRoomType, guests])
+  }, [query, location, priceMin, priceMax, selectedRoomType, guests])
 
   useEffect(() => {
     let isActive = true
@@ -113,6 +114,10 @@ function BrowsePage() {
 
         if (location) {
           params.set('city', location)
+        }
+
+        if (query) {
+          params.set('q', query)
         }
 
         if (priceMin) {
@@ -180,7 +185,7 @@ function BrowsePage() {
     return () => {
       isActive = false
     }
-  }, [location, priceMin, priceMax, selectedRoomType, guests, page])
+  }, [query, location, priceMin, priceMax, selectedRoomType, guests, page])
 
   return (
     <main className="browse-page">
