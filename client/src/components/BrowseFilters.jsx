@@ -48,6 +48,7 @@ function BrowseFilters({
             value={rating}
             onChange={onRatingChange}
           >
+            <option value="">Any</option>
             <option value="4.8">4.8+</option>
             <option value="4.5">4.5+</option>
             <option value="4.2">4.2+</option>

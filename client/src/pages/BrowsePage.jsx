@@ -13,14 +13,12 @@ const PAGE_SIZE = 10
 function BrowsePage() {
   const [query, setQuery] = useState('')
   const [location, setLocation] = useState('')
-  const [checkIn, setCheckIn] = useState('')
-  const [checkOut, setCheckOut] = useState('')
   const [guests, setGuests] = useState(2)
   const [priceMin, setPriceMin] = useState(60)
   const [priceMax, setPriceMax] = useState(260)
-  const [rating, setRating] = useState('4.5')
+  const [rating, setRating] = useState('')
   const [selectedRoomType, setSelectedRoomType] = useState('')
-  const [selectedAmenities, setSelectedAmenities] = useState(new Set(['Wi-Fi', 'Kitchen']))
+  const [selectedAmenities, setSelectedAmenities] = useState(new Set())
   const [roomTypes, setRoomTypes] = useState([])
   const [results, setResults] = useState([])
   const [isLoading, setIsLoading] = useState(true)
@@ -32,8 +30,8 @@ function BrowsePage() {
     const amenitiesLabel = Array.from(selectedAmenities).join(', ')
 
     return [
+      query && `Keyword: ${query}`,
       location && `Location: ${location}`,
-      checkIn && checkOut && `${checkIn} to ${checkOut}`,
       guests && `${guests} guests`,
       `Price: $${priceMin}-$${priceMax}`,
       rating && `Rating ${rating}+`,
@@ -41,9 +39,8 @@ function BrowsePage() {
       amenitiesLabel && amenitiesLabel,
     ].filter(Boolean)
   }, [
+    query,
     location,
-    checkIn,
-    checkOut,
     guests,
     priceMin,
     priceMax,
@@ -64,13 +61,20 @@ function BrowsePage() {
     })
   }
 
-  const handleSubmit = (event) => {
-    event.preventDefault()
+  const handleClearFilters = () => {
+    setQuery('')
+    setLocation('')
+    setGuests(2)
+    setPriceMin(60)
+    setPriceMax(260)
+    setRating('')
+    setSelectedRoomType('')
+    setSelectedAmenities(new Set())
   }
 
   useEffect(() => {
     setPage(1)
-  }, [location, priceMin, priceMax, selectedRoomType])
+  }, [query, location, priceMin, priceMax, rating, selectedRoomType, guests, selectedAmenities])
 
   useEffect(() => {
     let isActive = true
@@ -115,6 +119,10 @@ function BrowsePage() {
           params.set('city', location)
         }
 
+        if (query) {
+          params.set('q', query)
+        }
+
         if (priceMin) {
           params.set('minPrice', String(priceMin))
         }
@@ -123,8 +131,20 @@ function BrowsePage() {
           params.set('maxPrice', String(priceMax))
         }
 
+        if (rating) {
+          params.set('minRating', rating)
+        }
+
         if (selectedRoomType) {
           params.set('type', selectedRoomType)
+        }
+
+        if (guests) {
+          params.set('guests', String(guests))
+        }
+
+        if (selectedAmenities.size > 0) {
+          params.set('amenities', Array.from(selectedAmenities).join(','))
         }
 
         params.set('page', String(page))
@@ -176,7 +196,7 @@ function BrowsePage() {
     return () => {
       isActive = false
     }
-  }, [location, priceMin, priceMax, selectedRoomType, page])
+  }, [query, location, priceMin, priceMax, rating, selectedRoomType, guests, selectedAmenities, page])
 
   return (
     <main className="browse-page">
@@ -194,15 +214,11 @@ function BrowsePage() {
         <BrowseSearchForm
           query={query}
           location={location}
-          checkIn={checkIn}
-          checkOut={checkOut}
           guests={guests}
           onQueryChange={(event) => setQuery(event.target.value)}
           onLocationChange={(event) => setLocation(event.target.value)}
-          onCheckInChange={(event) => setCheckIn(event.target.value)}
-          onCheckOutChange={(event) => setCheckOut(event.target.value)}
           onGuestsChange={(event) => setGuests(Number(event.target.value))}
-          onSubmit={handleSubmit}
+          onClear={handleClearFilters}
         />
         <BrowseFilters
           priceMin={priceMin}

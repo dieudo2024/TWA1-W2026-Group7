@@ -7,10 +7,28 @@ function escapeRegExp(value) {
     return String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
+function buildAmenityRegex(amenity) {
+    const normalized = String(amenity).trim().toLowerCase();
+
+    if (normalized === 'wi-fi' || normalized === 'wifi') {
+        return /(wi[- ]?fi|wireless)/i;
+    }
+
+    if (normalized === 'free parking') {
+        return /free parking/i;
+    }
+
+    if (normalized === 'dedicated workspace') {
+        return /(dedicated workspace|workspace|desk)/i;
+    }
+
+    return new RegExp(escapeRegExp(amenity), 'i');
+}
+
 // GET /api/listings - Get all listings (Paginated + Filtered)
 router.get('/', async (req, res) => {
     try {
-        const { city, minPrice, maxPrice, type, page = 1 } = req.query;
+        const { city, minPrice, maxPrice, type, guests, q, minRating, amenities, page = 1 } = req.query;
         const limit = 10; // Limits results to 10 per page
         const skip = (page - 1) * limit;
 
@@ -22,12 +40,45 @@ router.get('/', async (req, res) => {
             if (minPrice) query.pricePerNight.$gte = Number(minPrice);
             if (maxPrice) query.pricePerNight.$lte = Number(maxPrice);
         }
+        if (guests) {
+            query.maxGuests = { $gte: Number(guests) };
+        }
+        if (minRating) {
+            query.averageRating = { $gte: Number(minRating) };
+        }
         if (type) {
             const typeRegex = new RegExp(`^${escapeRegExp(type)}$`, 'i');
             query.$or = [
                 { roomType: typeRegex },
                 { propertyType: typeRegex },
             ];
+        }
+        if (q) {
+            const keywordRegex = new RegExp(escapeRegExp(q), 'i');
+            query.$and = (query.$and || []).concat({
+                $or: [
+                    { title: keywordRegex },
+                    { description: keywordRegex },
+                    { 'location.city': keywordRegex },
+                    { 'location.country': keywordRegex },
+                    { 'location.address': keywordRegex },
+                    { amenities: keywordRegex },
+                ],
+            });
+        }
+
+        if (amenities) {
+            const amenityList = String(amenities)
+                .split(',')
+                .map((value) => value.trim())
+                .filter(Boolean);
+
+            if (amenityList.length > 0) {
+                const regexes = amenityList.map(buildAmenityRegex);
+                query.$and = (query.$and || []).concat(
+                    regexes.map((pattern) => ({ amenities: { $elemMatch: { $regex: pattern } } })),
+                );
+            }
         }
 
         const listings = await Listing.find(query)
