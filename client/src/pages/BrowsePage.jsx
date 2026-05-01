@@ -7,6 +7,7 @@ import { apiFetch } from '../utils/apiClient'
 
 const roomTypes = ['Entire place', 'Private room', 'Shared room', 'Hotel room']
 const amenities = ['Wi-Fi', 'Kitchen', 'Washer', 'Dedicated workspace', 'Free parking']
+const PAGE_SIZE = 10
 
 function BrowsePage() {
   const [query, setQuery] = useState('')
@@ -17,11 +18,13 @@ function BrowsePage() {
   const [priceMin, setPriceMin] = useState(60)
   const [priceMax, setPriceMax] = useState(260)
   const [rating, setRating] = useState('4.5')
-  const [selectedRoomType, setSelectedRoomType] = useState('Entire place')
+  const [selectedRoomType, setSelectedRoomType] = useState('')
   const [selectedAmenities, setSelectedAmenities] = useState(new Set(['Wi-Fi', 'Kitchen']))
   const [results, setResults] = useState([])
   const [isLoading, setIsLoading] = useState(true)
   const [errorMessage, setErrorMessage] = useState('')
+  const [page, setPage] = useState(1)
+  const [hasNextPage, setHasNextPage] = useState(false)
 
   const activeFilters = useMemo(() => {
     const amenitiesLabel = Array.from(selectedAmenities).join(', ')
@@ -64,6 +67,10 @@ function BrowsePage() {
   }
 
   useEffect(() => {
+    setPage(1)
+  }, [location, priceMin, priceMax, selectedRoomType])
+
+  useEffect(() => {
     let isActive = true
 
     async function loadListings() {
@@ -71,7 +78,28 @@ function BrowsePage() {
       setErrorMessage('')
 
       try {
-        const response = await apiFetch('/api/listings', { method: 'GET' }, { includeAuth: false })
+        const params = new URLSearchParams()
+
+        if (location) {
+          params.set('city', location)
+        }
+
+        if (priceMin) {
+          params.set('minPrice', String(priceMin))
+        }
+
+        if (priceMax) {
+          params.set('maxPrice', String(priceMax))
+        }
+
+        if (selectedRoomType) {
+          params.set('type', selectedRoomType)
+        }
+
+        params.set('page', String(page))
+
+        const queryString = params.toString()
+        const response = await apiFetch(`/api/listings${queryString ? `?${queryString}` : ''}`, { method: 'GET' }, { includeAuth: false })
 
         if (!response.ok) {
           throw new Error('Unable to load listings right now.')
@@ -97,9 +125,10 @@ function BrowsePage() {
             imageUrl: listing.images?.[0] || '',
             tag: listing.averageRating ? `${listing.averageRating.toFixed(1)} rating` : 'New listing',
           }
-        })
+        }).filter((item) => Boolean(item.id))
 
         setResults(nextResults)
+        setHasNextPage(Array.isArray(listings) && listings.length === PAGE_SIZE)
       } catch (error) {
         if (isActive) {
           setErrorMessage(error.message || 'Unable to load listings right now.')
@@ -116,7 +145,7 @@ function BrowsePage() {
     return () => {
       isActive = false
     }
-  }, [])
+  }, [location, priceMin, priceMax, selectedRoomType, page])
 
   return (
     <main className="browse-page">
@@ -157,6 +186,25 @@ function BrowsePage() {
         isLoading={isLoading}
         errorMessage={errorMessage}
       />
+      <div className="browse-pagination">
+        <button
+          type="button"
+          className="browse-page-button"
+          onClick={() => setPage((prev) => Math.max(1, prev - 1))}
+          disabled={page === 1 || isLoading}
+        >
+          Previous
+        </button>
+        <span className="browse-page-status">Page {page}</span>
+        <button
+          type="button"
+          className="browse-page-button"
+          onClick={() => setPage((prev) => prev + 1)}
+          disabled={!hasNextPage || isLoading}
+        >
+          Next
+        </button>
+      </div>
     </main>
   )
 }

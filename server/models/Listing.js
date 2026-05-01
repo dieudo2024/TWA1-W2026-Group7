@@ -4,6 +4,7 @@ const listingSchema = new mongoose.Schema(
 	{
 		_id: {
 			type: String,
+			required: true,
 		},
 		title: {
 			type: String,
@@ -29,6 +30,11 @@ const listingSchema = new mongoose.Schema(
 			required: true,
 			min: 0,
 		},
+		propertyType: {
+			type: String,
+			trim: true,
+			default: '',
+		},
 		maxGuests: {
 			type: Number,
 			required: true,
@@ -48,6 +54,25 @@ const listingSchema = new mongoose.Schema(
 			ref: 'User',
 			required: true,
 			index: true,
+		},
+		hostName: {
+			type: String,
+			trim: true,
+			default: '',
+		},
+		hostAbout: {
+			type: String,
+			trim: true,
+			default: '',
+		},
+		hostAvatarUrl: {
+			type: String,
+			trim: true,
+			default: '',
+		},
+		hostIsSuperhost: {
+			type: Boolean,
+			default: false,
 		},
 		averageRating: {
 			type: Number,

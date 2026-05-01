@@ -2,9 +2,6 @@ const mongoose = require('mongoose');
 
 const reviewSchema = new mongoose.Schema(
 	{
-		_id: {
-			type: String,
-		},
 		listing: {
 			type: String,
 			ref: 'Listing',
@@ -23,17 +20,23 @@ const reviewSchema = new mongoose.Schema(
 		},
 		comments: {
 			type: String,
+			required: true,
 			trim: true,
 			default: '',
 		},
 		rating: {
 			type: Number,
+			required: true,
 			min: 0,
 			max: 5,
 			default: 0,
 		},
+		photoPath: {
+			type: String,
+		},
 		date: {
 			type: Date,
+			default: Date.now,
 			required: true,
 		},
 	},
@@ -43,5 +46,8 @@ const reviewSchema = new mongoose.Schema(
 		toObject: { virtuals: true },
 	},
 );
+
+// Enforces the uniqueness of review
+reviewSchema.index({ listing: 1, author: 1 }, { unique: true});
 
 module.exports = mongoose.model('Review', reviewSchema);
