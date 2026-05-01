@@ -1,114 +1,132 @@
-import { useEffect, useMemo, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
-import { apiFetch } from '../utils/apiClient'
+import { useEffect, useMemo, useState } from "react";
+import { Link, useParams } from "react-router-dom";
+import { apiFetch } from "../utils/apiClient";
 
 function ListingDetailPage() {
-  const { id } = useParams()
-  const [listing, setListing] = useState(null)
-  const [isLoading, setIsLoading] = useState(true)
-  const [errorMessage, setErrorMessage] = useState('')
-  const [reviews, setReviews] = useState([])
-  const [isLoadingReviews, setIsLoadingReviews] = useState(true)
-  const [reviewsError, setReviewsError] = useState('')
+  const { id } = useParams();
+  const [listing, setListing] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [reviews, setReviews] = useState([]);
+  const [isLoadingReviews, setIsLoadingReviews] = useState(true);
+  const [reviewsError, setReviewsError] = useState("");
 
   const locationLabel = useMemo(() => {
     if (!listing?.location) {
       return ''
     }
 
-    return [listing.location.city, listing.location.country].filter(Boolean).join(', ')
-  }, [listing])
+    return [listing.location.city, listing.location.country]
+      .filter(Boolean)
+      .join(", ");
+  }, [listing]);
 
   useEffect(() => {
-    let isActive = true
+    let isActive = true;
 
     async function loadListing() {
-      setIsLoading(true)
-      setErrorMessage('')
+      setIsLoading(true);
+      setErrorMessage("");
 
       try {
-        const response = await apiFetch(`/api/listings/${id}`, { method: 'GET' }, { includeAuth: false })
+        const response = await apiFetch(
+          `/api/listings/${id}`,
+          { method: "GET" },
+          { includeAuth: false },
+        );
 
         if (!response.ok) {
-          throw new Error('Unable to load listing details right now.')
+          throw new Error("Unable to load listing details right now.");
         }
 
-        const data = await response.json()
+        const data = await response.json();
 
         if (isActive) {
-          setListing(data)
+          setListing(data);
         }
       } catch (error) {
         if (isActive) {
-          setErrorMessage(error.message || 'Unable to load listing details right now.')
+          setErrorMessage(
+            error.message || "Unable to load listing details right now.",
+          );
         }
       } finally {
         if (isActive) {
-          setIsLoading(false)
+          setIsLoading(false);
         }
       }
     }
 
-    loadListing()
+    loadListing();
 
     return () => {
-      isActive = false
-    }
-  }, [id])
+      isActive = false;
+    };
+  }, [id]);
 
   useEffect(() => {
-    let isActive = true
+    let isActive = true;
 
     async function loadReviews() {
-      setIsLoadingReviews(true)
-      setReviewsError('')
+      setIsLoadingReviews(true);
+      setReviewsError("");
 
       try {
-        const response = await apiFetch(`/api/listings/${id}/reviews`, { method: 'GET' }, { includeAuth: false })
+        const response = await apiFetch(
+          `/api/listings/${id}/reviews`,
+          { method: "GET" },
+          { includeAuth: false },
+        );
 
         if (!response.ok) {
-          throw new Error('Unable to load reviews right now.')
+          throw new Error("Unable to load reviews right now.");
         }
 
-        const data = await response.json()
+        const data = await response.json();
 
         if (isActive) {
-          setReviews(data)
+          setReviews(data);
         }
       } catch (error) {
         if (isActive) {
-          setReviewsError(error.message || 'Unable to load reviews right now.')
+          setReviewsError(error.message || "Unable to load reviews right now.");
         }
       } finally {
         if (isActive) {
-          setIsLoadingReviews(false)
+          setIsLoadingReviews(false);
         }
       }
     }
 
-    loadReviews()
+    loadReviews();
 
     return () => {
-      isActive = false
-    }
-  }, [id])
+      isActive = false;
+    };
+  }, [id]);
 
   return (
     <main className="listing-detail-page">
       {isLoading ? (
         <section className="listing-detail-hero">
-          <Link to="/browse" className="listing-detail-back">Back to browse</Link>
+          <Link to="/browse" className="listing-detail-back">
+            Back to browse
+          </Link>
           <h1>Loading listing...</h1>
         </section>
       ) : errorMessage ? (
         <section className="listing-detail-hero">
-          <Link to="/browse" className="listing-detail-back">Back to browse</Link>
+          <Link to="/browse" className="listing-detail-back">
+            Back to browse
+          </Link>
           <h1>Listing details</h1>
           <p>{errorMessage}</p>
         </section>
       ) : (
         <section className="listing-detail-hero">
-          <Link to="/browse" className="listing-detail-back">Back to browse</Link>
+          <Link to="/browse" className="listing-detail-back">
+            Back to browse
+          </Link>
           <div className="listing-detail-media">
             {listing.images?.[0] ? (
               <img src={listing.images[0]} alt={listing.title} />
@@ -118,8 +136,11 @@ function ListingDetailPage() {
           </div>
           <div className="listing-detail-info">
             <h1>{listing.title}</h1>
-            {locationLabel && <p className="listing-detail-location">{locationLabel}</p>}
-            {(listing.hostName || listing.hostAvatarUrl || listing.hostAbout) ? (
+            {locationLabel && (
+              <p className="listing-detail-location">{locationLabel}</p>
+            )}
+
+            {/* {(listing.hostName || listing.hostAvatarUrl || listing.hostAbout) ? (
               <div className="listing-detail-host">
                 {listing.hostAvatarUrl ? (
                   <img src={listing.hostAvatarUrl} alt={listing.hostName || 'Host'} />
@@ -136,9 +157,43 @@ function ListingDetailPage() {
                   ) : null}
                 </div>
               </div>
+            ) : null} */}
+
+
+            {listing.host ? (
+              <div className="listing-detail-host">
+                {listing.hostAvatarUrl ? (
+                  <img
+                    src={listing.hostAvatarUrl}
+                    alt={listing.hostName || "Host"}
+                  />
+                ) : (
+                  <div
+                    className="listing-detail-host-avatar"
+                    aria-hidden="true"
+                  />
+                )}
+                <div>
+                  <p className="listing-detail-host-name">
+                    {/* If hostName is empty, show "Host" */}
+                    Hosted by {listing.hostName || "Host"}
+                    {listing.hostIsSuperhost ? " · Superhost" : ""}
+                  </p>
+                  {listing.hostAbout && (
+                    <p className="listing-detail-host-about">
+                      {listing.hostAbout}
+                    </p>
+                  )}
+                </div>
+              </div>
             ) : null}
-            <p className="listing-detail-price">${listing.pricePerNight} per night</p>
-            <p className="listing-detail-guests">Sleeps up to {listing.maxGuests} guests</p>
+
+            <p className="listing-detail-price">
+              ${listing.pricePerNight} per night
+            </p>
+            <p className="listing-detail-guests">
+              Sleeps up to {listing.maxGuests} guests
+            </p>
             <p className="listing-detail-description">{listing.description}</p>
             {listing.amenities?.length ? (
               <div className="listing-detail-amenities">
@@ -163,14 +218,22 @@ function ListingDetailPage() {
                   {reviews.map((review) => (
                     <li key={review._id} className="listing-review">
                       <div className="listing-review-header">
-                        <p className="listing-review-name">{review.reviewerName || 'Guest'}</p>
+                        <p className="listing-review-name">
+                          {review.reviewerName || "Guest"}
+                        </p>
                         <p className="listing-review-meta">
-                          {review.rating ? `${review.rating.toFixed(1)} stars` : 'No rating'}
-                          {review.date ? ` · ${new Date(review.date).toLocaleDateString()}` : ''}
+                          {review.rating
+                            ? `${review.rating.toFixed(1)} stars`
+                            : "No rating"}
+                          {review.date
+                            ? ` · ${new Date(review.date).toLocaleDateString()}`
+                            : ""}
                         </p>
                       </div>
                       {review.comments ? (
-                        <p className="listing-review-comment">{review.comments}</p>
+                        <p className="listing-review-comment">
+                          {review.comments}
+                        </p>
                       ) : null}
                     </li>
                   ))}
@@ -181,7 +244,7 @@ function ListingDetailPage() {
         </section>
       )}
     </main>
-  )
+  );
 }
 
-export default ListingDetailPage
+export default ListingDetailPage;
