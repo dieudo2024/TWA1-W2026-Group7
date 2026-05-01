@@ -61,6 +61,7 @@ function BrowseFilters({
             value={selectedRoomType}
             onChange={onRoomTypeChange}
           >
+            <option value="">Any</option>
             {roomTypes.map((type) => (
               <option key={type} value={type}>{type}</option>
             ))}
