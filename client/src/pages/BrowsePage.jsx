@@ -7,7 +7,6 @@ import BrowseSearchForm from '../components/BrowseSearchForm'
 import LogoutButton from '../components/LogoutButton'
 import { apiFetch } from '../utils/apiClient'
 
-const roomTypes = ['Entire place', 'Private room', 'Shared room', 'Hotel room']
 const amenities = ['Wi-Fi', 'Kitchen', 'Washer', 'Dedicated workspace', 'Free parking']
 const PAGE_SIZE = 10
 
@@ -22,6 +21,7 @@ function BrowsePage() {
   const [rating, setRating] = useState('4.5')
   const [selectedRoomType, setSelectedRoomType] = useState('')
   const [selectedAmenities, setSelectedAmenities] = useState(new Set(['Wi-Fi', 'Kitchen']))
+  const [roomTypes, setRoomTypes] = useState([])
   const [results, setResults] = useState([])
   const [isLoading, setIsLoading] = useState(true)
   const [errorMessage, setErrorMessage] = useState('')
@@ -71,6 +71,35 @@ function BrowsePage() {
   useEffect(() => {
     setPage(1)
   }, [location, priceMin, priceMax, selectedRoomType])
+
+  useEffect(() => {
+    let isActive = true
+
+    async function loadRoomTypes() {
+      try {
+        const response = await apiFetch('/api/listings/room-types', { method: 'GET' }, { includeAuth: false })
+
+        if (!response.ok) {
+          throw new Error('Unable to load room types.')
+        }
+
+        const types = await response.json()
+        if (isActive) {
+          setRoomTypes(Array.isArray(types) ? types : [])
+        }
+      } catch {
+        if (isActive) {
+          setRoomTypes([])
+        }
+      }
+    }
+
+    loadRoomTypes()
+
+    return () => {
+      isActive = false
+    }
+  }, [])
 
   useEffect(() => {
     let isActive = true

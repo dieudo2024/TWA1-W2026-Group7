@@ -3,6 +3,10 @@ const router = express.Router();
 const Listing = require('../models/Listing');
 const Review = require('../models/Review');
 
+function escapeRegExp(value) {
+    return String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
 // GET /api/listings - Get all listings (Paginated + Filtered)
 router.get('/', async (req, res) => {
     try {
@@ -18,8 +22,13 @@ router.get('/', async (req, res) => {
             if (minPrice) query.pricePerNight.$gte = Number(minPrice);
             if (maxPrice) query.pricePerNight.$lte = Number(maxPrice);
         }
-        // Note: The dataset uses "property_type", ensure this matches your import script
-        if (type) query.propertyType = type; 
+        if (type) {
+            const typeRegex = new RegExp(`^${escapeRegExp(type)}$`, 'i');
+            query.$or = [
+                { roomType: typeRegex },
+                { propertyType: typeRegex },
+            ];
+        }
 
         const listings = await Listing.find(query)
             .limit(limit)
@@ -29,6 +38,26 @@ router.get('/', async (req, res) => {
         res.json(listings);
     } catch (err) {
         res.status(500).json({ message: "Error fetching listings", error: err.message });
+    }
+});
+
+// GET /api/listings/room-types - Get distinct room types for filters
+router.get('/room-types', async (req, res) => {
+    try {
+        const [roomTypes, propertyTypes] = await Promise.all([
+            Listing.distinct('roomType'),
+            Listing.distinct('propertyType'),
+        ]);
+
+        const cleaned = [...roomTypes, ...propertyTypes]
+            .map((type) => String(type || '').trim())
+            .filter(Boolean)
+            .filter((value, index, array) => array.indexOf(value) === index)
+            .sort((a, b) => a.localeCompare(b));
+
+        res.json(cleaned);
+    } catch (err) {
+        res.status(500).json({ message: 'Error fetching room types', error: err.message });
     }
 });
 
@@ -46,8 +75,6 @@ router.get('/:id', async (req, res) => {
 // GET /api/listings/:id/reviews - Get all reviews for a specific listing
 router.get('/:id/reviews', async (req, res) => {
     try {
-        // This looks in your 'reviews' collection for any review 
-        // where the 'listing' field matches the ID in the URL.
         const reviews = await Review.find({ listing: req.params.id })
             .sort({ date: -1 }); // Show newest first
 
