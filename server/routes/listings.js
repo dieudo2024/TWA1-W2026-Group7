@@ -1,6 +1,10 @@
 const express = require('express');
 const router = express.Router();
+<<<<<<< HEAD
+const Listing = require('../models/Listing'); // Imports the schema you just showed me
+=======
 const Listing = require('../models/Listing');
+>>>>>>> feature/listings-api
 const Review = require('../models/Review');
 
 // GET /api/listings - Get all listings (Paginated + Filtered)
@@ -33,6 +37,30 @@ router.get('/', async (req, res) => {
   }
 });
 
+<<<<<<< HEAD
+// GET /api/listings/:id - Get detail for one specific listing[cite: 1]
+router.get('/:id/reviews', async (req, res) => {
+    try {
+        const reviews = await Review.find({ listing: req.params.id })
+            .sort({ date: -1 })
+            .limit(20);
+
+        res.json(reviews);
+    } catch (err) {
+        res.status(500).json({ message: "Error fetching listing reviews", error: err.message });
+    }
+});
+
+// GET /api/listings/:id - Get detail for one specific listing[cite: 1]
+router.get('/:id', async (req, res) => {
+    try {
+        const listing = await Listing.findById(req.params.id);
+        if (!listing) return res.status(404).json({ message: 'Listing not found' });
+        res.json(listing);
+    } catch (err) {
+        res.status(500).json({ message: "Error fetching listing detail", error: err.message });
+    }
+=======
 // GET /api/listings/:id/reviews - Get reviews only
 router.get('/:id/reviews', async (req, res) => {
   try {
@@ -91,6 +119,7 @@ router.get('/:id', async (req, res) => {
   } catch (err) {
     res.status(500).json({ message: "Error fetching listing detail", error: err.message });
   }
+>>>>>>> feature/listings-api
 });
 
 module.exports = router;
