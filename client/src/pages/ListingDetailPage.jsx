@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { apiFetch } from "../utils/apiClient";
+import { getStoredUser } from "../utils/authStorage";
 
 function ListingDetailPage() {
   const { id } = useParams();
@@ -10,6 +11,14 @@ function ListingDetailPage() {
   const [reviews, setReviews] = useState([]);
   const [isLoadingReviews, setIsLoadingReviews] = useState(true);
   const [reviewsError, setReviewsError] = useState("");
+  const [reviewRating, setReviewRating] = useState(5);
+  const [reviewComments, setReviewComments] = useState("");
+  const [reviewSubmitting, setReviewSubmitting] = useState(false);
+  const [reviewError, setReviewError] = useState("");
+  const [reviewSuccess, setReviewSuccess] = useState("");
+
+  const user = getStoredUser();
+  const currentUserId = user?.id;
 
   const locationLabel = useMemo(() => {
     if (!listing?.location) {
@@ -104,6 +113,128 @@ function ListingDetailPage() {
       isActive = false;
     };
   }, [id]);
+
+  const userReview = useMemo(() => {
+    if (!currentUserId) {
+      return null;
+    }
+    return reviews.find((review) => review.author === currentUserId) || null;
+  }, [reviews, currentUserId]);
+
+  useEffect(() => {
+    if (userReview) {
+      setReviewRating(userReview.rating ?? 5);
+      setReviewComments(userReview.comments ?? "");
+    } else {
+      setReviewRating(5);
+      setReviewComments("");
+    }
+  }, [userReview]);
+
+  const reloadReviews = async () => {
+    setIsLoadingReviews(true);
+    setReviewsError("");
+
+    try {
+      const response = await apiFetch(
+        `/api/listings/${id}/reviews`,
+        { method: "GET" },
+        { includeAuth: false },
+      );
+
+      if (!response.ok) {
+        throw new Error("Unable to load reviews right now.");
+      }
+
+      const data = await response.json();
+      setReviews(data);
+    } catch (error) {
+      setReviewsError(error.message || "Unable to load reviews right now.");
+    } finally {
+      setIsLoadingReviews(false);
+    }
+  };
+
+  const handleReviewSubmit = async (event) => {
+    event.preventDefault();
+    setReviewError("");
+    setReviewSuccess("");
+
+    const trimmedComments = reviewComments.trim();
+    if (!trimmedComments) {
+      setReviewError("Please enter your review.");
+      return;
+    }
+
+    setReviewSubmitting(true);
+
+    try {
+      const payload = {
+        rating: Number(reviewRating),
+        comments: trimmedComments,
+      };
+
+      let response;
+      if (userReview?._id) {
+        response = await apiFetch(
+          `/api/reviews/${userReview._id}`,
+          {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          },
+        );
+      } else {
+        response = await apiFetch(
+          "/api/reviews",
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              listingId: id,
+              ...payload,
+            }),
+          },
+        );
+      }
+
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({}));
+        throw new Error(data.message || "Unable to save your review.");
+      }
+
+      await reloadReviews();
+      setReviewSuccess(userReview ? "Review updated." : "Review posted.");
+    } catch (error) {
+      setReviewError(error.message || "Unable to save your review.");
+    } finally {
+      setReviewSubmitting(false);
+    }
+  };
+
+  const handleReviewDelete = async (reviewId) => {
+    setReviewError("");
+    setReviewSuccess("");
+    setReviewSubmitting(true);
+
+    try {
+      const response = await apiFetch(`/api/reviews/${reviewId}`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({}));
+        throw new Error(data.message || "Unable to delete the review.");
+      }
+
+      await reloadReviews();
+      setReviewSuccess("Review deleted.");
+    } catch (error) {
+      setReviewError(error.message || "Unable to delete the review.");
+    } finally {
+      setReviewSubmitting(false);
+    }
+  };
 
   return (
     <main className="listing-detail-page">
@@ -207,6 +338,51 @@ function ListingDetailPage() {
             ) : null}
             <div className="listing-detail-reviews">
               <h2>Reviews</h2>
+              <form className="review-form" onSubmit={handleReviewSubmit}>
+                <div className="review-form-row">
+                  <label className="review-label">
+                    Rating
+                    <select
+                      className="review-input"
+                      value={reviewRating}
+                      onChange={(event) => setReviewRating(event.target.value)}
+                      disabled={reviewSubmitting}
+                    >
+                      {[5, 4.5, 4, 3.5, 3, 2.5, 2, 1.5, 1].map((value) => (
+                        <option key={value} value={value}>
+                          {value}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <label className="review-label review-textarea">
+                    Your review
+                    <textarea
+                      className="review-input"
+                      rows="3"
+                      value={reviewComments}
+                      onChange={(event) => setReviewComments(event.target.value)}
+                      disabled={reviewSubmitting}
+                      placeholder="Share your stay details..."
+                    />
+                  </label>
+                </div>
+                <div className="review-actions">
+                  <button
+                    type="submit"
+                    className="review-button"
+                    disabled={reviewSubmitting}
+                  >
+                    {userReview ? "Update review" : "Post review"}
+                  </button>
+                  {reviewError ? (
+                    <p className="review-feedback review-error">{reviewError}</p>
+                  ) : null}
+                  {reviewSuccess ? (
+                    <p className="review-feedback review-success">{reviewSuccess}</p>
+                  ) : null}
+                </div>
+              </form>
               {isLoadingReviews ? (
                 <p>Loading reviews...</p>
               ) : reviewsError ? (
@@ -234,6 +410,29 @@ function ListingDetailPage() {
                         <p className="listing-review-comment">
                           {review.comments}
                         </p>
+                      ) : null}
+                      {review.author === currentUserId ? (
+                        <div className="listing-review-actions">
+                          <button
+                            type="button"
+                            className="review-button review-button-ghost"
+                            onClick={() => {
+                              setReviewRating(review.rating ?? 5);
+                              setReviewComments(review.comments ?? "");
+                            }}
+                            disabled={reviewSubmitting}
+                          >
+                            Edit
+                          </button>
+                          <button
+                            type="button"
+                            className="review-button review-button-danger"
+                            onClick={() => handleReviewDelete(review._id)}
+                            disabled={reviewSubmitting}
+                          >
+                            Delete
+                          </button>
+                        </div>
                       ) : null}
                     </li>
                   ))}
