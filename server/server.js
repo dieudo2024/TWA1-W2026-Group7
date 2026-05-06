@@ -5,6 +5,7 @@ const mongoose = require('mongoose');
 const fs = require('fs');
 const path = require('path');
 const authRoutes = require('./routes/authRoutes');
+const usersRoutes = require('./routes/users');
 const listingsRoutes = require('./routes/listings');
 const Listing = require('./models/Listing');
 const { importData } = require('./utils/importData');
@@ -61,6 +62,7 @@ app.use('/uploads', express.static(uploadsDir));
 
 // Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/users', usersRoutes);
 app.use('/api/listings', listingsRoutes);
 
 app.use('/api/reviews', require('./routes/reviews'));
