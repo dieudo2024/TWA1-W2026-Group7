@@ -57,19 +57,11 @@ function App() {
         />
         <Route
           path="/browse"
-          element={(
-            <RequireAuth isAuthenticated={isAuthenticated}>
-              <BrowsePage />
-            </RequireAuth>
-          )}
+          element={<BrowsePage />}
         />
         <Route
           path="/listings/:id"
-          element={(
-            <RequireAuth isAuthenticated={isAuthenticated}>
-              <ListingDetailPage />
-            </RequireAuth>
-          )}
+          element={<ListingDetailPage />}
         />
         <Route
           path="/profile"
@@ -81,7 +73,7 @@ function App() {
         />
         <Route
           path="/"
-          element={<Navigate to={isAuthenticated ? '/welcome' : '/login'} replace />}
+          element={<Navigate to={isAuthenticated ? '/welcome' : '/browse'} replace />}
         />
       </Routes>
     </BrowserRouter>
