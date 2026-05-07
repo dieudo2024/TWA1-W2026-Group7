@@ -36,6 +36,21 @@ const upload = multer({
   },
 });
 
+// --- NEW: GET REVIEWS (This is what was missing) ---
+router.get('/', async (req, res) => {
+  try {
+    const query = {};
+    if (req.query.author) {
+      query.author = req.query.author;
+    }
+    // We populate 'listing' so the frontend can get the listing ID for the link
+    const reviews = await Review.find(query).populate('listing').sort({ createdAt: -1 });
+    res.json(reviews);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
 // CREATE REVIEW
 router.post('/', auth, upload.single('photo'), async (req, res) => {
   try {
@@ -45,19 +60,17 @@ router.post('/', auth, upload.single('photo'), async (req, res) => {
       return res.status(400).json({ message: 'Missing required fields' });
     }
 
-    // Ensure listing exists
     const listing = await Listing.findById(listingId);
     if (!listing) {
       return res.status(404).json({ message: 'Listing not found' });
     }
 
-    // Create review
     const review = await Review.create({
       listing: listingId,
       author: req.user._id,
       reviewerName: `${req.user.firstName} ${req.user.lastName}`,
       rating: Number(rating),
-      comments,
+      comments, // Note: saved as 'comments'
       photoPath: req.file ? `/uploads/${req.file.filename}` : undefined,
     });
 
@@ -83,7 +96,6 @@ router.put('/:id', auth, reviewOwner, upload.single('photo'), async (req, res) =
     }
 
     await req.review.save();
-
     res.json(req.review);
   } catch (err) {
     res.status(500).json({ message: err.message });
