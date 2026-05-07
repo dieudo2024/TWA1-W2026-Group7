@@ -10,6 +10,8 @@ const path = require('path');
 
 const router = express.Router();
 
+const profileUploadsDir = path.join(__dirname, '..', 'public', 'uploads', 'profile');
+
 /**
  * MULTER STORAGE CONFIGURATION
  * This ensures the physical file is saved into the folder 
@@ -19,7 +21,7 @@ const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     // We go UP one level from 'routes' then into 'public/uploads'
     // This matches: app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
-    const uploadPath = path.join(__dirname, '..', 'public', 'uploads');
+    const uploadPath = profileUploadsDir;
     
     if (!fs.existsSync(uploadPath)) {
       fs.mkdirSync(uploadPath, { recursive: true });
@@ -98,7 +100,7 @@ router.patch('/profile/avatar', auth, upload.single('avatar'), async (req, res) 
     if (req.file) {
       // SUCCESS: Store the URL path that the frontend expects.
       // Since server.js serves 'public/uploads' as '/uploads', this works:
-      user.avatarUrl = `/uploads/${req.file.filename}`;
+      user.avatarUrl = `/uploads/profile/${req.file.filename}`;
       await user.save();
     }
     

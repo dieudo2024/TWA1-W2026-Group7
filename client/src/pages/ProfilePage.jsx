@@ -28,12 +28,9 @@ function ProfilePage() {
         formData.append('avatar', file);
 
         setUploading(true);
-        const response = await fetch(`${apiBase}/api/auth/profile/avatar`, {
+        const response = await apiFetch('/api/auth/profile/avatar', {
             method: 'PATCH',
-            headers: { 
-                'Authorization': `Bearer ${localStorage.getItem('token')}` 
-            },
-            body: formData
+            body: formData,
         });
 
         if (response.ok) {
