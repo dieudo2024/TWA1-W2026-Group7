@@ -4,7 +4,9 @@ const bcrypt = require('bcryptjs');
 const express = require('express');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
-
+const auth = require('../middleware/auth');
+const multer = require('multer');
+const upload = multer({ dest: 'uploads/' });
 const router = express.Router();
 
 // REGISTER
@@ -67,6 +69,16 @@ router.post('/login', async (req, res) => {
 // LOGOUT (client removes token)
 router.post('/logout', (req, res) => {
   res.json({ message: 'Logged out successfully' });
+});
+
+// Get the current user profile  GET /api/auth/me
+router.get('/me', auth, async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+    res.json(user);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
 });
 
 module.exports = router;
