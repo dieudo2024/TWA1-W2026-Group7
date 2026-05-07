@@ -205,6 +205,10 @@ function BrowsePage() {
           <Link to="/browse" className="browse-tab-link" aria-current="page">
             Browse listings
           </Link>
+          {/* Added Profile tab link */}
+          <Link to="/profile" className="browse-tab-link">
+            Profile
+          </Link>
           <LogoutButton />
         </div>
       </nav>
