@@ -5,19 +5,27 @@ import LogoutButton from '../components/LogoutButton';
 
 function ProfilePage() {
     const [user, setUser] = useState(null);
+    const [reviews, setReviews] = useState([]); 
     const [uploading, setUploading] = useState(false);
 
     const apiBase = import.meta.env.VITE_API_URL || "http://localhost:3000";
 
     useEffect(() => {
-        async function loadProfile() {
-            const response = await apiFetch('/api/users/me', { method: 'GET' });
-            if (response.ok) {
-                const data = await response.json();
-                setUser(data);
+        async function loadProfileAndReviews() {
+            const userRes = await apiFetch('/api/auth/me', { method: 'GET' });
+            if (userRes.ok) {
+                const userData = await userRes.json();
+                setUser(userData);
+
+                // This calls the new GET route we added to reviews.js
+                const reviewRes = await apiFetch(`/api/reviews?author=${userData._id}`, { method: 'GET' });
+                if (reviewRes.ok) {
+                    const reviewData = await reviewRes.json();
+                    setReviews(reviewData);
+                }
             }
         }
-        loadProfile();
+        loadProfileAndReviews();
     }, []);
 
     const handleAvatarUpload = async (e) => {
@@ -28,14 +36,17 @@ function ProfilePage() {
         formData.append('avatar', file);
 
         setUploading(true);
-        const response = await apiFetch('/api/auth/profile/avatar', {
+        const response = await fetch(`${apiBase}/api/auth/profile/avatar`, {
             method: 'PATCH',
-            body: formData,
+            headers: { 
+                'Authorization': `Bearer ${localStorage.getItem('token')}` 
+            },
+            body: formData
         });
 
         if (response.ok) {
             const data = await response.json();
-            setUser(data); 
+            setUser(data);
         }
         setUploading(false);
     };
