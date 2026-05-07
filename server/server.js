@@ -95,14 +95,14 @@ const path = require('path');
 const authRoutes = require('./routes/authRoutes');
 const usersRoutes = require('./routes/users');
 const listingsRoutes = require('./routes/listings');
-const Listing = require('./models/Listing');
-const { importData } = require('./utils/importData');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Ensure the public uploads directory exists
-const publicUploadsDir = path.join(__dirname, 'public/uploads');
+// 1. Create the correct directory path
+const publicUploadsDir = path.join(__dirname, 'public', 'uploads');
+
+// 2. Ensure the folder exists
 if (!fs.existsSync(publicUploadsDir)) {
   fs.mkdirSync(publicUploadsDir, { recursive: true });
 }
@@ -110,8 +110,7 @@ if (!fs.existsSync(publicUploadsDir)) {
 app.use(cors());
 app.use(express.json());
 
-// Serving the uploads folder so the frontend can see the images
-app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
+app.use('/uploads', express.static(publicUploadsDir));
 
 // Routes
 app.use('/api/auth', authRoutes);
@@ -123,8 +122,7 @@ async function connectMongo() {
   try {
     await mongoose.connect(process.env.MONGO_URI);
     console.log('MongoDB connected');
-    // Start server after DB connection
-    app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+    app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
   } catch (err) {
     console.error('MongoDB startup error:', err.message);
   }
