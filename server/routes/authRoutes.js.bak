@@ -1,5 +1,4 @@
 require('dotenv').config();
-const bcrypt = require('bcryptjs');
 const express = require('express');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
@@ -79,6 +78,7 @@ router.post('/login', async (req, res) => {
   }
 });
 
+<<<<<<< HEAD
 // GET PROFILE
 router.get('/me', auth, async (req, res) => {
   try {
@@ -90,6 +90,9 @@ router.get('/me', auth, async (req, res) => {
 });
 
 // PATCH AVATAR (THE FIX)
+=======
+// PATCH AVATAR
+>>>>>>> 2e95a26ebcbfc55f3b4a6a4cfb2ae4494fd3edb4
 router.patch('/profile/avatar', auth, upload.single('avatar'), async (req, res) => {
   try {
     const user = await User.findById(req.user._id);
