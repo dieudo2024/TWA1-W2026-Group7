@@ -6,11 +6,13 @@ import BrowseResults from '../components/BrowseResults'
 import BrowseSearchForm from '../components/BrowseSearchForm'
 import LogoutButton from '../components/LogoutButton'
 import { apiFetch } from '../utils/apiClient'
+import { getAuthToken, subscribeToAuthChanges } from '../utils/authStorage'
 
 const amenities = ['Wi-Fi', 'Kitchen', 'Washer', 'Dedicated workspace', 'Free parking']
 const PAGE_SIZE = 10
 
 function BrowsePage() {
+  const [isAuthenticated, setIsAuthenticated] = useState(Boolean(getAuthToken()))
   const [query, setQuery] = useState('')
   const [location, setLocation] = useState('')
   const [guests, setGuests] = useState(2)
@@ -25,6 +27,14 @@ function BrowsePage() {
   const [errorMessage, setErrorMessage] = useState('')
   const [page, setPage] = useState(1)
   const [hasNextPage, setHasNextPage] = useState(false)
+
+  useEffect(() => {
+    const unsubscribe = subscribeToAuthChanges((nextValue) => {
+      setIsAuthenticated(nextValue)
+    })
+
+    return unsubscribe
+  }, [])
 
   const activeFilters = useMemo(() => {
     const amenitiesLabel = Array.from(selectedAmenities).join(', ')
@@ -205,11 +215,18 @@ function BrowsePage() {
           <Link to="/browse" className="browse-tab-link" aria-current="page">
             Browse listings
           </Link>
-          {/* Added Profile tab link */}
-          <Link to="/profile" className="browse-tab-link">
-            Profile
-          </Link>
-          <LogoutButton />
+          {isAuthenticated ? (
+            <>
+              <Link to="/profile" className="browse-tab-link">
+                Profile
+              </Link>
+              <LogoutButton />
+            </>
+          ) : (
+            <Link to="/login" className="browse-tab-link">
+              Log in
+            </Link>
+          )}
         </div>
       </nav>
       <BrowseHero />

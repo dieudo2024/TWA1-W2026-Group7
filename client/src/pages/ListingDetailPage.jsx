@@ -296,26 +296,6 @@ function ListingDetailPage() {
               <p className="listing-detail-location">{locationLabel}</p>
             )}
 
-            {/* {(listing.hostName || listing.hostAvatarUrl || listing.hostAbout) ? (
-              <div className="listing-detail-host">
-                {listing.hostAvatarUrl ? (
-                  <img src={listing.hostAvatarUrl} alt={listing.hostName || 'Host'} />
-                ) : (
-                  <div className="listing-detail-host-avatar" aria-hidden="true" />
-                )}
-                <div>
-                  <p className="listing-detail-host-name">
-                    Hosted by {listing.hostName || 'Host'}
-                    {listing.hostIsSuperhost ? ' · Superhost' : ''}
-                  </p>
-                  {listing.hostAbout ? (
-                    <p className="listing-detail-host-about">{listing.hostAbout}</p>
-                  ) : null}
-                </div>
-              </div>
-            ) : null} */}
-
-
             {listing.host ? (
               <div className="listing-detail-host">
                 {listing.hostAvatarUrl ? (
@@ -363,68 +343,77 @@ function ListingDetailPage() {
             ) : null}
             <div className="listing-detail-reviews">
               <h2>Reviews</h2>
-              <form className="review-form" onSubmit={handleReviewSubmit}>
-                <div className="review-form-row">
-                  <label className="review-label">
-                    Rating
-                    <select
-                      className="review-input"
-                      value={reviewRating}
-                      onChange={(event) => setReviewRating(event.target.value)}
+              {currentUserId ? (
+                <form className="review-form" onSubmit={handleReviewSubmit}>
+                  <div className="review-form-row">
+                    <label className="review-label">
+                      Rating
+                      <select
+                        className="review-input"
+                        value={reviewRating}
+                        onChange={(event) => setReviewRating(event.target.value)}
+                        disabled={reviewSubmitting}
+                      >
+                        {[5, 4.5, 4, 3.5, 3, 2.5, 2, 1.5, 1].map((value) => (
+                          <option key={value} value={value}>
+                            {value}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                    <label className="review-label review-textarea">
+                      Your review
+                      <textarea
+                        className="review-input"
+                        rows="3"
+                        value={reviewComments}
+                        onChange={(event) => setReviewComments(event.target.value)}
+                        disabled={reviewSubmitting}
+                        placeholder="Share your stay details..."
+                      />
+                    </label>
+                    <label className="review-label">
+                      Optional photo
+                      <input
+                        className="review-input"
+                        type="file"
+                        accept="image/*"
+                        onChange={(event) => setReviewPhoto(event.target.files?.[0] || null)}
+                        disabled={reviewSubmitting}
+                      />
+                    </label>
+                  </div>
+                  {reviewPhotoPreview ? (
+                    <img
+                      className="review-photo-preview"
+                      src={reviewPhotoPreview}
+                      alt="Selected review"
+                    />
+                  ) : null}
+                  <div className="review-actions">
+                    <button
+                      type="submit"
+                      className="review-button"
                       disabled={reviewSubmitting}
                     >
-                      {[5, 4.5, 4, 3.5, 3, 2.5, 2, 1.5, 1].map((value) => (
-                        <option key={value} value={value}>
-                          {value}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-                  <label className="review-label review-textarea">
-                    Your review
-                    <textarea
-                      className="review-input"
-                      rows="3"
-                      value={reviewComments}
-                      onChange={(event) => setReviewComments(event.target.value)}
-                      disabled={reviewSubmitting}
-                      placeholder="Share your stay details..."
-                    />
-                  </label>
-                  <label className="review-label">
-                    Optional photo
-                    <input
-                      className="review-input"
-                      type="file"
-                      accept="image/*"
-                      onChange={(event) => setReviewPhoto(event.target.files?.[0] || null)}
-                      disabled={reviewSubmitting}
-                    />
-                  </label>
-                </div>
-                {reviewPhotoPreview ? (
-                  <img
-                    className="review-photo-preview"
-                    src={reviewPhotoPreview}
-                    alt="Selected review"
-                  />
-                ) : null}
+                      {userReview ? "Update review" : "Post review"}
+                    </button>
+                    {reviewError ? (
+                      <p className="review-feedback review-error">{reviewError}</p>
+                    ) : null}
+                    {reviewSuccess ? (
+                      <p className="review-feedback review-success">{reviewSuccess}</p>
+                    ) : null}
+                  </div>
+                </form>
+              ) : (
                 <div className="review-actions">
-                  <button
-                    type="submit"
-                    className="review-button"
-                    disabled={reviewSubmitting}
-                  >
-                    {userReview ? "Update review" : "Post review"}
-                  </button>
-                  {reviewError ? (
-                    <p className="review-feedback review-error">{reviewError}</p>
-                  ) : null}
-                  {reviewSuccess ? (
-                    <p className="review-feedback review-success">{reviewSuccess}</p>
-                  ) : null}
+                  <p className="review-feedback">Log in to post a review.</p>
+                  <Link to="/login" className="review-button">
+                    Log in
+                  </Link>
                 </div>
-              </form>
+              )}
               {isLoadingReviews ? (
                 <p>Loading reviews...</p>
               ) : reviewsError ? (

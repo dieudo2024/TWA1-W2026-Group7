@@ -7,17 +7,17 @@ function ProfilePage() {
     const [user, setUser] = useState(null);
     const [reviews, setReviews] = useState([]); 
     const [uploading, setUploading] = useState(false);
+    const [firstName, setFirstName] = useState('');
+    const [lastName, setLastName] = useState('');
+    const [savingProfile, setSavingProfile] = useState(false);
+    const [profileError, setProfileError] = useState('');
+    const [profileSuccess, setProfileSuccess] = useState('');
+    const [isEditingProfile, setIsEditingProfile] = useState(false);
 
     const apiBase = import.meta.env.VITE_API_URL || "http://localhost:3000";
 
     useEffect(() => {
 <<<<<<< HEAD
-        async function loadProfile() {
-            const response = await apiFetch('/api/users/me', { method: 'GET' });
-            if (response.ok) {
-                const data = await response.json();
-                setUser(data);
-=======
         async function loadProfileAndReviews() {
             const userRes = await apiFetch('/api/auth/me', { method: 'GET' });
             if (userRes.ok) {
@@ -30,11 +30,79 @@ function ProfilePage() {
                     const reviewData = await reviewRes.json();
                     setReviews(reviewData);
                 }
->>>>>>> feature/profile-ui
+=======
+        async function loadProfile() {
+            const response = await apiFetch('/api/users/me', { method: 'GET' });
+            if (response.ok) {
+                const data = await response.json();
+                setUser(data);
+                setFirstName(data.firstName || '');
+                setLastName(data.lastName || '');
+>>>>>>> feature/profile-api
             }
         }
         loadProfileAndReviews();
     }, []);
+
+    const handleProfileSave = async (event) => {
+        event.preventDefault();
+        setProfileError('');
+        setProfileSuccess('');
+
+        const nextFirstName = firstName.trim();
+        const nextLastName = lastName.trim();
+
+        if (!nextFirstName || !nextLastName) {
+            setProfileError('Please enter both your first and last name.');
+            return;
+        }
+
+        setSavingProfile(true);
+        try {
+            const response = await apiFetch('/api/users/me', {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    firstName: nextFirstName,
+                    lastName: nextLastName,
+                }),
+            });
+
+            if (!response.ok) {
+                const data = await response.json().catch(() => ({}));
+                throw new Error(data.message || 'Unable to update profile.');
+            }
+
+            const updated = await response.json();
+            setUser(updated);
+            setFirstName(updated.firstName || nextFirstName);
+            setLastName(updated.lastName || nextLastName);
+            setProfileSuccess('Profile updated.');
+            setIsEditingProfile(false);
+        } catch (error) {
+            setProfileError(error.message || 'Unable to update profile.');
+        } finally {
+            setSavingProfile(false);
+        }
+    };
+
+    const beginEditProfile = () => {
+        setProfileError('');
+        setProfileSuccess('');
+        setFirstName(user?.firstName || '');
+        setLastName(user?.lastName || '');
+        setIsEditingProfile(true);
+    };
+
+    const cancelEditProfile = () => {
+        setProfileError('');
+        setProfileSuccess('');
+        setFirstName(user?.firstName || '');
+        setLastName(user?.lastName || '');
+        setIsEditingProfile(false);
+    };
 
     const handleAvatarUpload = async (e) => {
         const file = e.target.files[0];
@@ -44,9 +112,12 @@ function ProfilePage() {
         formData.append('avatar', file);
 
         setUploading(true);
-        const response = await apiFetch('/api/auth/profile/avatar', {
+        const response = await fetch(`${apiBase}/api/auth/profile/avatar`, {
             method: 'PATCH',
-            body: formData,
+            headers: { 
+                'Authorization': `Bearer ${localStorage.getItem('token')}` 
+            },
+            body: formData
         });
 
         if (response.ok) {
@@ -74,6 +145,7 @@ function ProfilePage() {
                 </div>
             </nav>
 
+<<<<<<< HEAD
             <div className="page-container" style={{ display: 'flex', gap: '50px', alignItems: 'flex-start' }}>
                 
                 <aside style={{ flex: '0 0 350px' }}>
@@ -84,6 +156,32 @@ function ProfilePage() {
                             width="160" 
                             height="160"
                             style={{ borderRadius: '50%', objectFit: 'cover', border: '4px solid #f7f7f7', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
+=======
+            <div className="page-container">
+                <div className="avatar-section" style={{ textAlign: 'center', marginBottom: '40px' }}>
+                    <img
+                        src={user.avatarUrl ? `${apiBase}${user.avatarUrl}` : '/default-avatar.png'} 
+                        alt="Avatar"
+                        width="160"
+                        height="160"
+                        style={{
+                            borderRadius: '50%',
+                            objectFit: 'cover',
+                            border: '4px solid #f7f7f7',
+                            boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+                        }}
+                    />
+                    <div style={{ marginTop: '20px' }}>
+                        <label htmlFor="avatar-upload" className="browse-page-button" style={{ cursor: 'pointer', padding: '10px 20px' }}>
+                            {uploading ? 'Uploading...' : 'Change Photo'}
+                        </label>
+                        <input
+                            id="avatar-upload"
+                            type="file"
+                            onChange={handleAvatarUpload}
+                            disabled={uploading}
+                            style={{ display: 'none' }}
+>>>>>>> feature/profile-api
                         />
                         <div style={{ marginTop: '20px' }}>
                             <input type="file" id="avatar-upload" onChange={handleAvatarUpload} disabled={uploading} style={{ display: 'none' }} />
@@ -93,6 +191,7 @@ function ProfilePage() {
                         </div>
                     </div>
 
+<<<<<<< HEAD
                     <div className="info-section" style={{ padding: '25px', borderRadius: '12px', border: '1px solid #ddd' }}>
                         <p><strong>Name:</strong> {user.firstName} {user.lastName}</p>
                         <p><strong>Email:</strong> {user.email}</p>
@@ -123,6 +222,81 @@ function ProfilePage() {
                         <p style={{ color: '#717171' }}>You haven't written any reviews yet.</p>
                     )}
                 </section>
+=======
+                <div className="info-section" style={{
+                    backgroundColor: '#17151f',
+                    padding: '30px',
+                    borderRadius: '12px',
+                    border: '1px solid #ddd',
+                    maxWidth: '500px',
+                    margin: '0 auto',
+                    textAlign: 'center'
+                }}>
+                    <div style={{ marginBottom: '15px' }}>
+                        <span style={{ color: '#717171', fontSize: '0.9rem', display: 'block' }}>Full Name</span>
+                        <strong style={{ fontSize: '1.1rem' }}>{user.firstName} {user.lastName}</strong>
+                    </div>
+                    <div style={{ marginBottom: '15px' }}>
+                        <span style={{ color: '#717171', fontSize: '0.9rem', display: 'block' }}>Email Address</span>
+                        <strong style={{ fontSize: '1.1rem' }}>{user.email}</strong>
+                    </div>
+                    <div>
+                        <span style={{ color: '#717171', fontSize: '0.9rem', display: 'block' }}>Role</span>
+                        <strong style={{ fontSize: '1.1rem', textTransform: 'capitalize' }}>{user.role}</strong>
+                    </div>
+
+                    {!isEditingProfile ? (
+                        <div style={{ marginTop: '24px', display: 'flex', justifyContent: 'center' }}>
+                            <button type="button" className="browse-page-button" onClick={beginEditProfile}>
+                                Edit
+                            </button>
+                        </div>
+                    ) : (
+                        <form onSubmit={handleProfileSave} style={{ marginTop: '24px', textAlign: 'left' }}>
+                            <div style={{ marginBottom: '12px' }}>
+                                <label style={{ display: 'block', marginBottom: '6px', color: '#717171', fontSize: '0.9rem' }}>
+                                    First name
+                                </label>
+                                <input
+                                    type="text"
+                                    value={firstName}
+                                    onChange={(e) => setFirstName(e.target.value)}
+                                    disabled={savingProfile}
+                                    style={{ width: '100%', padding: '10px 12px', borderRadius: '10px', border: '1px solid #ddd' }}
+                                />
+                            </div>
+                            <div style={{ marginBottom: '16px' }}>
+                                <label style={{ display: 'block', marginBottom: '6px', color: '#717171', fontSize: '0.9rem' }}>
+                                    Last name
+                                </label>
+                                <input
+                                    type="text"
+                                    value={lastName}
+                                    onChange={(e) => setLastName(e.target.value)}
+                                    disabled={savingProfile}
+                                    style={{ width: '100%', padding: '10px 12px', borderRadius: '10px', border: '1px solid #ddd' }}
+                                />
+                            </div>
+
+                            <div style={{ display: 'flex', justifyContent: 'center', gap: '10px' }}>
+                                <button type="submit" className="browse-page-button" disabled={savingProfile}>
+                                    {savingProfile ? 'Saving...' : 'Save'}
+                                </button>
+                                <button type="button" className="browse-page-button" onClick={cancelEditProfile} disabled={savingProfile}>
+                                    Cancel
+                                </button>
+                            </div>
+
+                            {profileError ? (
+                                <p style={{ marginTop: '12px', color: '#b91c1c', textAlign: 'center' }}>{profileError}</p>
+                            ) : null}
+                            {profileSuccess ? (
+                                <p style={{ marginTop: '12px', color: '#15803d', textAlign: 'center' }}>{profileSuccess}</p>
+                            ) : null}
+                        </form>
+                    )}
+                </div>
+>>>>>>> feature/profile-api
             </div>
         </main>
     );
