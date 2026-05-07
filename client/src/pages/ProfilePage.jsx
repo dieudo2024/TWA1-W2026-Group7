@@ -11,7 +11,7 @@ function ProfilePage() {
 
     useEffect(() => {
         async function loadProfile() {
-            const response = await apiFetch('/api/auth/me', { method: 'GET' });
+            const response = await apiFetch('/api/users/me', { method: 'GET' });
             if (response.ok) {
                 const data = await response.json();
                 setUser(data);
