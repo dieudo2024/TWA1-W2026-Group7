@@ -5,6 +5,7 @@ import LoginPage from './pages/LoginPage'
 import WelcomePage from './pages/WelcomePage'
 import BrowsePage from './pages/BrowsePage'
 import ListingDetailPage from './pages/ListingDetailPage'
+import ProfilePage from './pages/ProfilePage'
 import { getAuthToken, subscribeToAuthChanges } from './utils/authStorage'
 import './App.css'
 
@@ -67,6 +68,14 @@ function App() {
           element={(
             <RequireAuth isAuthenticated={isAuthenticated}>
               <ListingDetailPage />
+            </RequireAuth>
+          )}
+        />
+        <Route
+          path="/profile"
+          element={(
+            <RequireAuth isAuthenticated={isAuthenticated}>
+              <ProfilePage />
             </RequireAuth>
           )}
         />
