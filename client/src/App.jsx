@@ -5,6 +5,7 @@ import LoginPage from './pages/LoginPage'
 import WelcomePage from './pages/WelcomePage'
 import BrowsePage from './pages/BrowsePage'
 import ListingDetailPage from './pages/ListingDetailPage'
+import ProfilePage from './pages/ProfilePage'
 import { getAuthToken, subscribeToAuthChanges } from './utils/authStorage'
 import './App.css'
 
@@ -56,23 +57,23 @@ function App() {
         />
         <Route
           path="/browse"
-          element={(
-            <RequireAuth isAuthenticated={isAuthenticated}>
-              <BrowsePage />
-            </RequireAuth>
-          )}
+          element={<BrowsePage />}
         />
         <Route
           path="/listings/:id"
+          element={<ListingDetailPage />}
+        />
+        <Route
+          path="/profile"
           element={(
             <RequireAuth isAuthenticated={isAuthenticated}>
-              <ListingDetailPage />
+              <ProfilePage />
             </RequireAuth>
           )}
         />
         <Route
           path="/"
-          element={<Navigate to={isAuthenticated ? '/welcome' : '/login'} replace />}
+          element={<Navigate to={isAuthenticated ? '/welcome' : '/browse'} replace />}
         />
       </Routes>
     </BrowserRouter>

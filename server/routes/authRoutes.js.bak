@@ -1,5 +1,4 @@
 require('dotenv').config();
-const bcrypt = require('bcryptjs');
 const express = require('express');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
@@ -10,8 +9,6 @@ const path = require('path');
 
 const router = express.Router();
 
-const profileUploadsDir = path.join(__dirname, '..', 'public', 'uploads', 'profile');
-
 /**
  * MULTER STORAGE CONFIGURATION
  * This ensures the physical file is saved into the folder 
@@ -21,7 +18,7 @@ const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     // We go UP one level from 'routes' then into 'public/uploads'
     // This matches: app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
-    const uploadPath = profileUploadsDir;
+    const uploadPath = path.join(__dirname, '..', 'public', 'uploads');
     
     if (!fs.existsSync(uploadPath)) {
       fs.mkdirSync(uploadPath, { recursive: true });
@@ -81,6 +78,7 @@ router.post('/login', async (req, res) => {
   }
 });
 
+<<<<<<< HEAD
 // GET PROFILE
 router.get('/me', auth, async (req, res) => {
   try {
@@ -92,6 +90,9 @@ router.get('/me', auth, async (req, res) => {
 });
 
 // PATCH AVATAR (THE FIX)
+=======
+// PATCH AVATAR
+>>>>>>> 2e95a26ebcbfc55f3b4a6a4cfb2ae4494fd3edb4
 router.patch('/profile/avatar', auth, upload.single('avatar'), async (req, res) => {
   try {
     const user = await User.findById(req.user._id);
@@ -100,7 +101,7 @@ router.patch('/profile/avatar', auth, upload.single('avatar'), async (req, res) 
     if (req.file) {
       // SUCCESS: Store the URL path that the frontend expects.
       // Since server.js serves 'public/uploads' as '/uploads', this works:
-      user.avatarUrl = `/uploads/profile/${req.file.filename}`;
+      user.avatarUrl = `/uploads/${req.file.filename}`;
       await user.save();
     }
     
