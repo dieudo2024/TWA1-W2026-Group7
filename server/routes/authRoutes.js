@@ -81,4 +81,18 @@ router.get('/me', auth, async (req, res) => {
   }
 });
 
+// PATCH /api/auth/profile Update the avatar
+router.patch('/profile/avatar', auth, upload.single('avatar'), async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+    if (req.file) {
+      user.avatarUrl = `/uploads/${req.file.filename}`;
+      await user.save();
+    }
+    res.json(user);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
 module.exports = router;
