@@ -67,7 +67,7 @@ app.use('/api/listings', listingsRoutes);
 
 app.use('/api/reviews', require('./routes/reviews'));
 
-// app.use('/api/listings', require('./routes/listings'));
+app.use('uploads', express.static(path.join(__dirname, 'public/uploads')));
 
 // Example protected route
 app.get('/api/protected', require('./middleware/auth'), (req, res) => {
