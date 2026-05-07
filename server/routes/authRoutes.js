@@ -63,16 +63,6 @@ router.post('/login', async (req, res) => {
   }
 });
 
-// GET PROFILE
-router.get('/me', auth, async (req, res) => {
-  try {
-    const user = await User.findById(req.user._id);
-    res.json(user);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
-});
-
 // PATCH AVATAR
 router.patch('/profile/avatar', auth, upload.single('avatar'), async (req, res) => {
   try {
