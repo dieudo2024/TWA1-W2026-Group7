@@ -34,4 +34,22 @@ function ProfilePage() {
         }
         setUploading(false);
     };
+
+    if (!user) return <p>Loading...</p>;
+
+    return (
+        <div className="profile-container">
+            <h1>Your Profile</h1>
+            <div className="avatar-section">
+                <img src={user.avaterUrl || '/default-avatar.png'} alt="Avatar" width="150" />
+                <input type="file" onChange={handleAvatarUpload} disabled={uploading} />
+            </div>
+            <div className="info-section">
+                <p><strong>Name:</strong> {user.firstName} {user.lastName}</p>
+                <p><strong>Email:</strong> {user.email}</p>
+            </div>
+        </div>
+    );
 }
+
+export default ProfilePage;
