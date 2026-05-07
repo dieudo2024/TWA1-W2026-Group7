@@ -5,7 +5,6 @@ function ProfilePage() {
     const [user, setUser] = useState(null);
     const [uploading, setUploading] = useState(false);
 
-    // This helps the frontend find the images stored on your server
     const apiBase = import.meta.env.VITE_API_URL || "http://localhost:3000";
 
     useEffect(() => {
@@ -27,8 +26,6 @@ function ProfilePage() {
         formData.append('avatar', file);
 
         setUploading(true);
-        // Note: We use the full URL here because apiFetch is set up for JSON, 
-        // and file uploads (FormData) need special handling.
         const response = await fetch(`${apiBase}/api/auth/profile/avatar`, {
             method: 'PATCH',
             headers: { 
@@ -39,30 +36,37 @@ function ProfilePage() {
 
         if (response.ok) {
             const data = await response.json();
-            setUser(data); // Updated state with the new image path
+            setUser(data);
         }
         setUploading(false);
     };
 
-    if (!user) return <p>Loading...</p>;
+    if (!user) return <div className="page-container"><p>Loading profile...</p></div>;
 
     return (
         <div className="page-container">
             <h1>Your Profile</h1>
-            <div className="avatar-section">
-                {/* We combine apiBase + avatarUrl so the browser can find the image file */}
+            <div className="avatar-section" style={{ textAlign: 'center', marginBottom: '20px' }}>
                 <img 
-                    src={user.avatarUrl ? `${apiBase}${user.avatarUrl}` : '/default-avatar.png'} 
+                    src={user.avatarUrl ? `${apiBase}${user.avatarUrl}` : 'https://via.placeholder.com/150'} 
                     alt="Avatar" 
                     width="150" 
-                    style={{ borderRadius: '50%', objectFit: 'cover' }}
+                    height="150"
+                    style={{ borderRadius: '50%', objectFit: 'cover', border: '2px solid #ff385c' }} 
                 />
                 <br />
-                <input type="file" onChange={handleAvatarUpload} disabled={uploading} />
-                {uploading && <p>Uploading...</p>}
+                <input 
+                    type="file" 
+                    id="avatarInput"
+                    onChange={handleAvatarUpload} 
+                    disabled={uploading} 
+                    style={{ marginTop: '10px' }}
+                />
+                {uploading && <p>Uploading photo...</p>}
             </div>
             <div className="info-section">
-                <p><strong>Name:</strong> {user.firstName} {user.lastName}</p>
+                <p><strong>First Name:</strong> {user.firstName}</p>
+                <p><strong>Last Name:</strong> {user.lastName}</p>
                 <p><strong>Email:</strong> {user.email}</p>
                 <p><strong>Role:</strong> {user.role}</p>
             </div>
