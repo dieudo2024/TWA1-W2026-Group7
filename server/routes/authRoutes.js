@@ -6,7 +6,6 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const auth = require('../middleware/auth');
 const multer = require('multer');
-const upload = multer({ dest: 'uploads/' });
 const fs = require('fs');
 const path = require('path');
 
