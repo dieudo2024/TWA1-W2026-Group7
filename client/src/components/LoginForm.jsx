@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useNavigate } from 'react-router-dom'
 import { setAuthSession } from '../utils/authStorage'
@@ -33,6 +33,16 @@ function LoginForm() {
   const [isSuccess, setIsSuccess] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const navigate = useNavigate()
+  const redirectTimeoutRef = useRef(null)
+
+  useEffect(() => {
+    return () => {
+      if (redirectTimeoutRef.current) {
+        clearTimeout(redirectTimeoutRef.current)
+        redirectTimeoutRef.current = null
+      }
+    }
+  }, [])
 
   const onChange = (event) => {
     const { name, value } = event.target
@@ -44,6 +54,7 @@ function LoginForm() {
 
   const onSubmit = (event) => {
     event.preventDefault()
+    if (submitting) return
     const nextErrors = validate(form)
     setErrors(nextErrors)
     setApiMessage('')
@@ -80,10 +91,14 @@ function LoginForm() {
           setApiMessage('Login successful. Redirecting...')
           setForm(initialForm)
           
+          if (redirectTimeoutRef.current) {
+            clearTimeout(redirectTimeoutRef.current)
+          }
+
           // Redirect to dashboard or home page
-          setTimeout(() => {
-            navigate('/welcome')
-          }, 1000)
+          redirectTimeoutRef.current = setTimeout(() => {
+            navigate('/welcome', { replace: true })
+          }, 800)
         } catch (error) {
           setIsSuccess(false)
           setApiMessage('Unable to reach the server. Please try again.')
