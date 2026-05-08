@@ -293,21 +293,35 @@ function ProfilePage() {
                     <h2 style={{ marginBottom: '25px' }}>Your Reviews ({reviews.length})</h2>
                     {reviews.length > 0 ? (
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '20px' }}>
-                            {reviews.map((review) => (
-                                <div key={review._id} style={{ padding: '20px', border: '1px solid #ddd', borderRadius: '12px' }}>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                        <span style={{ fontWeight: 'bold', color: '#ff385c' }}>{review.rating} ★</span>
-                                        <Link
-                                            to={`/listings/${review.listing?._id || review.listing}`}
-                                            style={{ fontSize: '0.9rem', color: '#484848' }}
-                                        >
-                                            View Listing
-                                        </Link>
+                            {reviews.map((review) => {
+                                const listingId = review.listing?._id || review.listing
+                                const listingTitle = review.listing?.title
+
+                                return (
+                                    <div key={review._id} style={{ padding: '20px', border: '1px solid #ddd', borderRadius: '12px' }}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                            <span style={{ fontWeight: 'bold', color: '#ff385c' }}>{review.rating} ★</span>
+                                            {listingId ? (
+                                                <Link
+                                                    to={`/listings/${listingId}`}
+                                                    style={{ fontSize: '0.9rem', color: '#ffffff' }}
+                                                >
+                                                    View Listing
+                                                </Link>
+                                            ) : null}
+                                        </div>
+
+                                        {listingTitle ? (
+                                            <div style={{ marginTop: '12px', marginBottom: '4px', color: '#ffffff', fontWeight: 600 }}>
+                                                {listingTitle}
+                                            </div>
+                                        ) : null}
+
+                                        <p style={{ margin: '10px 0', color: '#ffffff' }}>{review.comments}</p>
+                                        <small style={{ color: '#ffffff' }}>{new Date(review.createdAt).toLocaleDateString()}</small>
                                     </div>
-                                    <p style={{ margin: '10px 0' }}>{review.comments}</p>
-                                    <small style={{ color: '#717171' }}>{new Date(review.createdAt).toLocaleDateString()}</small>
-                                </div>
-                            ))}
+                                )
+                            })}
                         </div>
                     ) : (
                         <p style={{ color: '#717171' }}>No reviews yet.</p>
