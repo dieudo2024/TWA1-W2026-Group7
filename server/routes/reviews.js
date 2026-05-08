@@ -36,6 +36,27 @@ const upload = multer({
   },
 });
 
+// GET MY REVIEWS (supports ?author=... but always enforces current user)
+router.get('/', auth, async (req, res) => {
+  try {
+    const requestedAuthor = req.query.author;
+    const currentUserId = String(req.user?._id || '');
+
+    if (requestedAuthor && String(requestedAuthor) !== currentUserId) {
+      return res.status(403).json({ message: 'Not allowed to view other users\' reviews' });
+    }
+
+    const reviews = await Review.find({ author: currentUserId })
+      .populate('listing')
+      .sort({ createdAt: -1 })
+      .limit(200);
+
+    return res.json(reviews);
+  } catch (err) {
+    return res.status(500).json({ message: err.message });
+  }
+});
+
 // CREATE REVIEW
 router.post('/', auth, upload.single('photo'), async (req, res) => {
   try {
