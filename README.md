@@ -41,7 +41,11 @@ cd TWA1-W2026-Group07
    ```
 4. **Import the Dataset:** Ensure your MongoDB local server is running, then run the import script provided:
    ```bash
-   node utils/importData.js
+   npm run import:data
+   ```
+   To verify the import was successful, you can run:
+   ```bash
+   npm run verify:data
    ```
 
 ### 3. Frontend Configuration
@@ -51,18 +55,23 @@ cd TWA1-W2026-Group07
    ```env
    VITE_API_URL=http://localhost:3000
    ```
+   > **Note:** This URL must match your backend server address and port.
 
 ---
 
 ## Running the Application
 
+
 ### Start the Backend
 From the `server` directory:
 ```bash
+npm run dev
+```
+or
+```bash
 npm start
 ```
-or 
-
+or
 ```bash
 node server.js
 ```
@@ -73,7 +82,34 @@ From the `client` directory:
 ```bash
 npm run dev
 ```
-*The app will be accessible at http://localhost:5173 (default Vite port)
+*The app will be accessible at http://localhost:5173 (default Vite port)*
+
+### Open in Browser
+Go to [http://localhost:5173](http://localhost:5173) in your web browser to use the app.
+
+### Production Build (Frontend)
+To build the frontend for production:
+```bash
+npm run build
+```
+To preview the production build locally:
+```bash
+npm run preview
+```
+---
+
+## Available Scripts
+
+### Server
+- `npm run dev` — Start server with nodemon (auto-reloads on changes)
+- `npm start` — Start server normally
+- `npm run import:data` — Import demo data
+- `npm run verify:data` — Check counts of listings, users, reviews
+
+### Client
+- `npm run dev` — Start Vite dev server
+- `npm run build` — Build for production
+- `npm run preview` — Preview production build
 
 ---
 
