@@ -5,7 +5,6 @@ import LogoutButton from '../components/LogoutButton';
 
 function ProfilePage() {
     const [user, setUser] = useState(null);
-    const [reviews, setReviews] = useState([]); 
     const [uploading, setUploading] = useState(false);
     const [firstName, setFirstName] = useState('');
     const [lastName, setLastName] = useState('');
@@ -17,21 +16,23 @@ function ProfilePage() {
     const apiBase = import.meta.env.VITE_API_URL || "http://localhost:3000";
 
     useEffect(() => {
-        async function loadProfileAndReviews() {
-            const userRes = await apiFetch('/api/auth/me', { method: 'GET' });
-            if (userRes.ok) {
-                const userData = await userRes.json();
-                setUser(userData);
+        async function loadProfile() {
+            const response = await apiFetch('/api/users/me', { method: 'GET' });
+            if (response.ok) {
+                const data = await response.json();
+                setUser(data);
+                setFirstName(data.firstName || '');
+                setLastName(data.lastName || '');
 
                 // This calls the new GET route we added to reviews.js
-                const reviewRes = await apiFetch(`/api/reviews?author=${userData._id}`, { method: 'GET' });
-                if (reviewRes.ok) {
-                    const reviewData = await reviewRes.json();
-                    setReviews(reviewData);
-                }
+                                const reviewRes = await apiFetch(`/api/reviews?author=${data._id}`, { method: 'GET' });
+                                if (reviewRes.ok) {
+                                    const reviewData = await reviewRes.json();
+                                    setReviews(reviewData);
+                                }
             }
         }
-        loadProfileAndReviews();
+        loadProfile();
     }, []);
 
     const handleProfileSave = async (event) => {
@@ -104,10 +105,7 @@ function ProfilePage() {
         setUploading(true);
         const response = await apiFetch('/api/auth/profile/avatar', {
             method: 'PATCH',
-            headers: { 
-                'Authorization': `Bearer ${localStorage.getItem('token')}` 
-            },
-            body: formData
+            body: formData,
         });
 
         if (response.ok) {
@@ -149,8 +147,7 @@ function ProfilePage() {
                 </div>
             </nav>
 
-            <div className="page-container" style={{ display: 'flex', gap: '50px', alignItems: 'flex-start' }}>
-                <aside style={{ flex: '0 0 350px' }}>
+            <div className="page-container">
                 <div className="avatar-section" style={{ textAlign: 'center', marginBottom: '40px' }}>
                     <img
                         src={user.avatarUrl ? `${apiBase}${user.avatarUrl}` : '/default-avatar.png'} 
@@ -175,44 +172,73 @@ function ProfilePage() {
                             disabled={uploading}
                             style={{ display: 'none' }}
                         />
-                        <div style={{ marginTop: '20px' }}>
-                            <input type="file" id="avatar-upload" onChange={handleAvatarUpload} disabled={uploading} style={{ display: 'none' }} />
-                            <label htmlFor="avatar-upload" className="browse-page-button" style={{ cursor: 'pointer', padding: '10px 20px' }}>
+<div style={{ marginTop: '20px' }}>
+<input type="file" id="avatar-upload" onChange={handleAvatarUpload} disabled={uploading} style={{ display: 'none' }} />
+<label htmlFor="avatar-upload" className="browse-page-button" style={{ cursor: 'pointer', padding: '10px 20px' }}>
                                 {uploading ? 'Uploading...' : 'Change Photo'}
-                            </label>
-                        </div>
-                    </div>
-                </div>
+</label>
+</div>
+</div>
+ 
+                    <div className="info-section" style={{ padding: '25px', borderRadius: '12px', border: '1px solid #ddd' }}>
+<p><strong>Name:</strong> {user.firstName} {user.lastName}</p>
+<p><strong>Email:</strong> {user.email}</p>
+<p><strong>Role:</strong> {user.role}</p>
 
-                <div className="info-section" style={{
-                    backgroundColor: '#17151f',
-                    padding: '30px',
-                    borderRadius: '12px',
-                    border: '1px solid #ddd',
-                    maxWidth: '500px',
-                    margin: '0 auto',
-                    textAlign: 'center'
-                }}>
-                    <div style={{ marginBottom: '15px' }}>
-                        <span style={{ color: '#717171', fontSize: '0.9rem', display: 'block' }}>Full Name</span>
-                        <strong style={{ fontSize: '1.1rem' }}>{user.firstName} {user.lastName}</strong>
-                    </div>
-                    <div style={{ marginBottom: '15px' }}>
-                        <span style={{ color: '#717171', fontSize: '0.9rem', display: 'block' }}>Email Address</span>
-                    <strong style={{ fontSize: '1.1rem' }}>{user.email}</strong>
-                    </div>
-                    <div>
-                        <span style={{ color: '#717171', fontSize: '0.9rem', display: 'block' }}>Role</span>
-                        <strong style={{ fontSize: '1.1rem', textTransform: 'capitalize' }}>{user.role}</strong>
-                    </div>
+                        {!isEditingProfile ? (
+                            <div style={{ marginTop: '18px', display: 'flex', justifyContent: 'center' }}>
+                                <button type="button" className="browse-page-button" onClick={beginEditProfile}>
+                                    Edit
+                                </button>
+                            </div>
+                        ) : (
+                            <form onSubmit={handleProfileSave} style={{ marginTop: '18px' }}>
+                                <div style={{ marginBottom: '12px' }}>
+                                    <label style={{ display: 'block', marginBottom: '6px', fontSize: '0.9rem', color: '#717171' }}>
+                                        First name
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={firstName}
+                                        onChange={(e) => setFirstName(e.target.value)}
+                                        disabled={savingProfile}
+                                        style={{ width: '100%', padding: '10px 12px', borderRadius: '10px', border: '1px solid #ddd' }}
+                                    />
+                                </div>
 
-                    {!isEditingProfile ? (
-                        <div style={{ marginTop: '24px', display: 'flex', justifyContent: 'center' }}>
-                            <button type="button" className="browse-page-button" onClick={beginEditProfile}>
-                                Edit
-                            </button>
-                </aside>
+                                <div style={{ marginBottom: '16px' }}>
+                                    <label style={{ display: 'block', marginBottom: '6px', fontSize: '0.9rem', color: '#717171' }}>
+                                        Last name
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={lastName}
+                                        onChange={(e) => setLastName(e.target.value)}
+                                        disabled={savingProfile}
+                                        style={{ width: '100%', padding: '10px 12px', borderRadius: '10px', border: '1px solid #ddd' }}
+                                    />
+                                </div>
 
+                                <div style={{ display: 'flex', justifyContent: 'center', gap: '10px' }}>
+                                    <button type="submit" className="browse-page-button" disabled={savingProfile}>
+                                        {savingProfile ? 'Saving...' : 'Save'}
+                                    </button>
+                                    <button type="button" className="browse-page-button" onClick={cancelEditProfile} disabled={savingProfile}>
+                                        Cancel
+                                    </button>
+                                </div>
+
+                                {profileError ? (
+                                    <p style={{ marginTop: '12px', color: '#b91c1c', textAlign: 'center' }}>{profileError}</p>
+                                ) : null}
+                                {profileSuccess ? (
+                                    <p style={{ marginTop: '12px', color: '#15803d', textAlign: 'center' }}>{profileSuccess}</p>
+                                ) : null}
+                            </form>
+                        )}
+</div>
+</aside>
+ 
                 <section style={{ flex: 1 }}>
                     <h2 style={{ marginBottom: '25px' }}>Your Reviews ({reviews.length})</h2>
                     {reviews.length > 0 ? (

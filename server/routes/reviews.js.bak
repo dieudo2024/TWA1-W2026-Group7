@@ -36,6 +36,44 @@ const upload = multer({
   },
 });
 
+<<<<<<< HEAD
+// --- NEW: GET REVIEWS (This is what was missing) ---
+router.get('/', async (req, res) => {
+  try {
+    const query = {};
+    if (req.query.author) {
+      query.author = req.query.author;
+    }
+    // We populate 'listing' so the frontend can get the listing ID for the link
+    const reviews = await Review.find(query).populate('listing').sort({ createdAt: -1 });
+    res.json(reviews);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+=======
+// GET MY REVIEWS (supports ?author=... but always enforces current user)
+router.get('/', auth, async (req, res) => {
+  try {
+    const requestedAuthor = req.query.author;
+    const currentUserId = String(req.user?._id || '');
+
+    if (requestedAuthor && String(requestedAuthor) !== currentUserId) {
+      return res.status(403).json({ message: 'Not allowed to view other users\' reviews' });
+    }
+
+    const reviews = await Review.find({ author: currentUserId })
+      .populate('listing')
+      .sort({ createdAt: -1 })
+      .limit(200);
+
+    return res.json(reviews);
+  } catch (err) {
+    return res.status(500).json({ message: err.message });
+  }
+});
+
+>>>>>>> feature/test
 // CREATE REVIEW
 router.post('/', auth, upload.single('photo'), async (req, res) => {
   try {

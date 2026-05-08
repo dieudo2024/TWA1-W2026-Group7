@@ -36,20 +36,27 @@ const upload = multer({
   },
 });
 
-// --- NEW: GET REVIEWS (This is what was missing) ---
-router.get('/', async (req, res) => {
+// GET MY REVIEWS (supports ?author=... but always enforces current user)
+router.get('/', auth, async (req, res) => {
   try {
-    const query = {};
-    if (req.query.author) {
-      query.author = req.query.author;
+    const requestedAuthor = req.query.author;
+    const currentUserId = String(req.user?._id || '');
+
+    if (requestedAuthor && String(requestedAuthor) !== currentUserId) {
+      return res.status(403).json({ message: 'Not allowed to view other users\' reviews' });
     }
-    // We populate 'listing' so the frontend can get the listing ID for the link
-    const reviews = await Review.find(query).populate('listing').sort({ createdAt: -1 });
-    res.json(reviews);
+
+    const reviews = await Review.find({ author: currentUserId })
+      .populate('listing')
+      .sort({ createdAt: -1 })
+      .limit(200);
+
+    return res.json(reviews);
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    return res.status(500).json({ message: err.message });
   }
 });
+
 // CREATE REVIEW
 router.post('/', auth, upload.single('photo'), async (req, res) => {
   try {
@@ -72,7 +79,7 @@ router.post('/', auth, upload.single('photo'), async (req, res) => {
       reviewerName: `${req.user.firstName} ${req.user.lastName}`,
       rating: Number(rating),
       comments,
-      photoPath: req.file ? `/uploads/${req.file.filename}` : undefined,
+      photoPath: req.file ? `/uploads/reviews/${req.file.filename}` : undefined,
     });
 
     res.status(201).json(review);
@@ -93,7 +100,7 @@ router.put('/:id', auth, reviewOwner, upload.single('photo'), async (req, res) =
     req.review.comments = comments ?? req.review.comments;
 
     if (req.file) {
-      req.review.photoPath = `/uploads/${req.file.filename}`;
+      req.review.photoPath = `/uploads/reviews/${req.file.filename}`;
     }
 
     await req.review.save();
