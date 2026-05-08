@@ -6,6 +6,8 @@ import LogoutButton from '../components/LogoutButton'
 function ProfilePage() {
     const [user, setUser] = useState(null)
     const [reviews, setReviews] = useState([])
+    const [isLoadingReviews, setIsLoadingReviews] = useState(true)
+    const [reviewsError, setReviewsError] = useState('')
     const [uploading, setUploading] = useState(false)
 
     const [firstName, setFirstName] = useState('')
@@ -23,6 +25,8 @@ function ProfilePage() {
 
         async function loadProfileAndReviews() {
             setProfileError('')
+            setReviewsError('')
+            setIsLoadingReviews(true)
 
             try {
                 const userRes = await apiFetch('/api/users/me', { method: 'GET' })
@@ -38,17 +42,30 @@ function ProfilePage() {
                 setFirstName(userData.firstName || '')
                 setLastName(userData.lastName || '')
 
-                const reviewRes = await apiFetch(`/api/reviews?author=${userData._id}`, { method: 'GET' })
-                if (!reviewRes.ok) {
-                    return
-                }
+                try {
+                    const reviewRes = await apiFetch(`/api/reviews?author=${userData._id}`, { method: 'GET' })
+                    if (!reviewRes.ok) {
+                        const data = await reviewRes.json().catch(() => ({}))
+                        throw new Error(data.message || 'Failed to load reviews.')
+                    }
 
-                const reviewData = await reviewRes.json().catch(() => [])
-                if (cancelled) return
-                setReviews(Array.isArray(reviewData) ? reviewData : [])
+                    const reviewData = await reviewRes.json().catch(() => [])
+                    if (cancelled) return
+                    setReviews(Array.isArray(reviewData) ? reviewData : [])
+                } catch (error) {
+                    if (!cancelled) {
+                        setReviews([])
+                        setReviewsError(error?.message || 'Failed to load reviews.')
+                    }
+                } finally {
+                    if (!cancelled) {
+                        setIsLoadingReviews(false)
+                    }
+                }
             } catch (error) {
                 if (!cancelled) {
                     setProfileError(error?.message || 'Failed to load profile.')
+                    setIsLoadingReviews(false)
                 }
             }
         }
@@ -163,7 +180,7 @@ function ProfilePage() {
                 </div>
 
                 <div style={{ flex: 1, textAlign: 'center' }}>
-                    <h1 style={{ fontSize: '1.5rem', margin: 0, whiteSpace: 'nowrap' }}>Your Profile</h1>
+                    <h1 style={{ fontSize: '1.5rem', margin: 0, whiteSpace: 'nowrap' }}>Welcome, {firstName} !</h1>
                 </div>
 
                 <div style={{ flex: 1, textAlign: 'right' }}>
@@ -290,8 +307,12 @@ function ProfilePage() {
                 </aside>
 
                 <section style={{ flex: 1 }}>
-                    <h2 style={{ marginBottom: '25px' }}>Your Reviews ({reviews.length})</h2>
-                    {reviews.length > 0 ? (
+                    <h2 style={{ marginBottom: '25px' }}>Your Reviews ({isLoadingReviews ? '…' : reviews.length})</h2>
+                    {isLoadingReviews ? (
+                        <p style={{ color: '#ffffff' }}>Loading reviews...</p>
+                    ) : reviewsError ? (
+                        <p style={{ color: '#b91c1c' }}>{reviewsError}</p>
+                    ) : reviews.length > 0 ? (
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '20px' }}>
                             {reviews.map((review) => {
                                 const listingId = review.listing?._id || review.listing
