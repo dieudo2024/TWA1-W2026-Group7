@@ -175,7 +175,7 @@ function ProfilePage() {
     if (!user) {
         return (
             <main className="profile-page">
-                <ProfileHeader />
+                <ProfileHeader name={firstName} />
                 <div className="page-container">
                     <p>Loading...</p>
                     {profileError ? <p style={{ marginTop: '12px', color: '#b91c1c' }}>{profileError}</p> : null}
@@ -186,7 +186,7 @@ function ProfilePage() {
 
     return (
         <main className="profile-page">
-            <ProfileHeader />
+            <ProfileHeader name={firstName} />
 
             <div className="page-container" style={{ display: 'flex', gap: '50px', alignItems: 'flex-start' }}>
                 <aside style={{ flex: '0 0 350px' }}>

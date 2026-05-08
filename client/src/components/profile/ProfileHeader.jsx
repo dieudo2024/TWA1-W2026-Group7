@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom'
 import LogoutButton from '../LogoutButton'
 
-function ProfileHeader() {
+function ProfileHeader({ name }) {
     return (
         <nav className="browse-tabs" style={{ marginBottom: '40px', padding: '10px 20px' }}>
             <div className="browse-tabs-inner" style={{ display: 'flex', alignItems: 'center', width: '100%' }}>
@@ -12,7 +12,7 @@ function ProfileHeader() {
                 </div>
 
                 <div style={{ flex: 1, textAlign: 'center' }}>
-                    <h1 style={{ fontSize: '1.5rem', margin: 0, whiteSpace: 'nowrap' }}>Your Profile</h1>
+                    <h1 style={{ fontSize: '1.5rem', margin: 0, whiteSpace: 'nowrap' }}>Welcome {name} !</h1>
                 </div>
 
                 <div style={{ flex: 1, textAlign: 'right' }}>
