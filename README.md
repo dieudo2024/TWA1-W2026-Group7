@@ -59,7 +59,12 @@ cd TWA1-W2026-Group07
 ### Start the Backend
 From the `server` directory:
 ```bash
-npm start or node server.js
+npm start
+```
+or 
+
+```bash
+node server.js
 ```
 *The server will run on http://localhost:3000*
 
